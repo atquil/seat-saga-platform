@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 03-create-movies-and-shows
+      author: atquil
+      comment: "Movie catalog and show schedule"
+      dbms: postgresql
+      context: local, dev, prod
+      changes:
+        - sql:
+            sql: |
+              -- 5. Movies
+              CREATE TABLE movie (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                duration_minutes INTEGER NOT NULL,
+                genre VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
+              COMMENT ON TABLE movie IS 'Movie catalog metadata';
+
+              -- 6. Shows (The specific instance of a movie at a screen)
+              CREATE TABLE show (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                movie_id BIGINT NOT NULL REFERENCES movie(id),
+                screen_id BIGINT NOT NULL REFERENCES screen(id),
+                start_time TIMESTAMP NOT NULL,
+                end_time TIMESTAMP NOT NULL,
+                base_price DECIMAL(10, 2) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
+              CREATE INDEX idx_show_movie ON show(movie_id);
+              CREATE INDEX idx_show_start_time ON show(start_time);
+              COMMENT ON TABLE show IS 'Specific movie show timings';
+              COMMENT ON INDEX idx_show_movie IS 'Movie-wise show lookup';
+              COMMENT ON INDEX idx_show_start_time IS 'Date/time filtering';
+      rollback:
+        - sql:
+            sql: |
+              DROP INDEX IF EXISTS idx_show_movie;
+              DROP INDEX IF EXISTS idx_show_start_time;
+              DROP TABLE IF EXISTS show CASCADE;
+              DROP TABLE IF EXISTS movie CASCADE;
