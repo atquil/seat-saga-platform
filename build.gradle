@@ -38,7 +38,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'     // Security
 
     // === API Documentation ===
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'   // Swagger/OpenAPI
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'   // Swagger/OpenAPI
 
     // === Database Driver ===
     runtimeOnly 'org.postgresql:postgresql'                                    // PostgreSQL JDBC driver

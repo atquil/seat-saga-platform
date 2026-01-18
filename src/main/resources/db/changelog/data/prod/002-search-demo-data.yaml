@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-add-search-demo-data
+      author: atquil
+      context: prod
+      changes:
+        - sql:
+            sql: |
+              -- 1. Create a Second Theatre (INOX) in the SAME city (Bengaluru)
+              INSERT INTO theatre (partner_id, name, city, address)
+              VALUES (
+                (SELECT id FROM seat_saga_partner LIMIT 1), 
+                'INOX Lido', 
+                'Bengaluru', 
+                'Ulsoor, Bengaluru'
+              );
+
+              -- 2. Create a Screen for INOX
+              INSERT INTO screen (theatre_id, name, total_seats)
+              VALUES ((SELECT id FROM theatre WHERE name = 'INOX Lido'), 'Screen A', 20);
+
+              -- 3. Add Seats for INOX Screen
+              INSERT INTO seat (screen_id, row_number, seat_number, seat_type)
+              SELECT (SELECT id FROM screen WHERE name = 'Screen A'), 'A', s, 'REGULAR' 
+              FROM generate_series(1, 10) AS s;
+
+              -- 4. Create a Show for 'Inception' at INOX (Different Time: 8 PM)
+              INSERT INTO show (movie_id, screen_id, start_time, end_time, base_price)
+              VALUES (
+                (SELECT id FROM movie WHERE title = 'Inception' LIMIT 1),
+                (SELECT id FROM screen WHERE name = 'Screen A'),
+                NOW() + INTERVAL '1 day' + INTERVAL '2 hours', -- 2 hours later than the first show
+                NOW() + INTERVAL '1 day' + INTERVAL '2 hours' + INTERVAL '148 minutes',
+                300.00
+              );
+              
+              -- 5. Create Inventory for this new show
+              INSERT INTO show_seat (show_id, seat_id, status, price)
+              SELECT 
+                sh.id, s.id, 'AVAILABLE', sh.base_price
+              FROM show sh
+              CROSS JOIN seat s
+              WHERE sh.screen_id = s.screen_id
+              AND sh.screen_id = (SELECT id FROM screen WHERE name = 'Screen A');

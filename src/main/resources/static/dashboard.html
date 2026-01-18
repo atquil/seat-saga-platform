@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Saga - Dashboard</title>
+
+    <!-- Optional: Include Font Awesome for icons (used in the monitoring button) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+          integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding: 50px;
+            text-align: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #007bff;
+            margin-bottom: 0.5rem;
+        }
+        .intro {
+            color: #555;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+        .card {
+            background: white;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.25s ease;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 180px;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+            border-color: #007bff;
+        }
+        h2 {
+            color: #007bff;
+            margin: 0 0 12px 0;
+            font-size: 1.5rem;
+        }
+        p {
+            color: #666;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        .highlight-card {
+            position: relative;
+        }
+        .highlight-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 6px;
+            background: linear-gradient(to bottom, #8b5cf6, #a78bfa);
+            border-radius: 12px 0 0 12px;
+        }
+        .hero-btn {
+            margin: 1.5rem 0 2.5rem 0;
+            display: inline-block;
+            background: #6366f1;
+            color: white;
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+        .hero-btn:hover {
+            background: #4f46e5;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+        .logout-btn {
+            margin-top: 3rem;
+            display: inline-block;
+            color: #dc3545;
+            text-decoration: none;
+            border: 2px solid #dc3545;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover {
+            background: #dc3545;
+            color: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 Seat Saga Developer Dashboard</h1>
+
+    <!-- Hero button to Monitoring Dashboard -->
+    <a href="/health-dashboard.html" class="hero-btn">
+        <i class="fas fa-heart-pulse" style="margin-right: 10px;"></i>
+        Open Monitoring Dashboard
+    </a>
+
+    <p class="intro">You are authenticated. Choose a tool to continue:</p>
+
+    <div class="grid">
+
+        <a href="/swagger-ui.html" class="card">
+            <h2>📚 Swagger UI</h2>
+            <p>Test and explore API endpoints interactively</p>
+        </a>
+
+        <a href="/api-docs" target="_blank" class="card">
+            <h2>📄 OpenAPI Spec</h2>
+            <p>Raw JSON OpenAPI 3.0 documentation</p>
+        </a>
+
+        <a href="/booking.html" class="card" style="border-left: 6px solid #e50914;">
+            <h2>🎟️ Book Tickets</h2>
+            <p>Interactive visual seat selection demo</p>
+        </a>
+
+        <a href="/search.html" class="card" style="border-left: 6px solid #28a745;">
+            <h2>🔍 Browse Shows</h2>
+            <p>Search movies & shows by city</p>
+        </a>
+
+    </div>
+
+    <a href="/logout" class="logout-btn">Logout</a>
+</div>
+
+</body>
+</html>

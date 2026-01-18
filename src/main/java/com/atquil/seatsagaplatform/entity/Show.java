@@ -1,5 +1,6 @@
 package com.atquil.seatsagaplatform.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,10 +21,12 @@ public class Show extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id", nullable = false)
+    //@JsonIgnore : As we want to see the movie details
     private Movie movie;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "screen_id", nullable = false)
+    @JsonIgnore
     private Screen screen;
 
     @Column(name = "start_time", nullable = false)

@@ -1,5 +1,6 @@
 package com.atquil.seatsagaplatform.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -22,6 +23,7 @@ public class Screen extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "theatre_id", nullable = false)
+    @JsonIgnore
     private Theatre theatre;
 
     @Column(nullable = false)

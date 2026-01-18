@@ -47,7 +47,7 @@ services:
       timeout: 3s    # Fail if check takes more than 3 seconds
       retries: 20    # Mark container as unhealthy only after 20 failures
 
-  app:
+  seat-saga-api:
 
     # === Local SPECIFIC CONFIG ===
     # 🔌 1. PORT MAPPING (Local accessibility):

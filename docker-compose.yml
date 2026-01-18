@@ -2,7 +2,7 @@ services:
   # ============================================
   # 🐳  BASE DOCKER COMPOSE
   # ============================================
-  app:
+  seat-saga-api:
     # 🏷️ 1. IDENTITY & NAMING:  Consistent naming across all environments
     container_name: seat-saga-api
 
