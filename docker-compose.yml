@@ -1,0 +1,46 @@
+services:
+  # ============================================
+  # 🐳  BASE DOCKER COMPOSE
+  # ============================================
+  app:
+    # 🏷️ 1. IDENTITY & NAMING:  Consistent naming across all environments
+    container_name: seat-saga-api
+
+    # 🏗️ 2. BUILD CONFIGURATION
+    # Single Dockerfile strategy: Same image for dev, test, staging, prod
+    # This ensures "built once, run anywhere" consistency
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILD_VERSION=${BUILD_VERSION:-latest}  # Optional: For version tagging
+
+    # 🔌 3. NETWORK CONFIGURATION
+    # We expose port 8080 to other containers (like a DB),
+    # but we DO NOT map it to the host machine here.
+    expose:
+      - "8080"
+
+    # 🌐 4. NETWORK MEMBERSHIP: Always on this network be it locally or in prod
+    networks:
+      - app-network       # Internal bridge network
+
+    # 📦 5. SHARED ENVIRONMENT VARIABLES
+    # Basic environment variables common to all (e.g., App Name, Timezone)
+    environment:
+      - APP_NAME=SeatSagaPlatform
+      - TZ=UTC
+
+    # 🔄 6. RESTART POLICY
+    # "unless-stopped": Restart on failure, but respect docker stop
+    restart: unless-stopped
+
+# ============================================
+# 🌐 NETWORK DEFINITION
+# ============================================
+
+# We define the network here so it exists for everyone
+networks:
+  app-network:
+    driver: bridge
+

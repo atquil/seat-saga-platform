@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-booking-table-sql
+      author: atquil
+      comment: "Creating Booking Table - Stores user bookings"
+      dbms: postgresql
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE seat_saga_booking (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                user_id BIGINT NOT NULL,
+                booking_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                total_amount DECIMAL(10,2) NOT NULL,
+                status VARCHAR(20) DEFAULT 'PENDING_PAYMENT',
+                idempotency_key VARCHAR(100) UNIQUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
+              COMMENT ON TABLE seat_saga_booking IS 'Bookings made by users';
+      rollback:
+        - sql:
+            sql: |
+              DROP TABLE IF EXISTS seat_saga_booking;

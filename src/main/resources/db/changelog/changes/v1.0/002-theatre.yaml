@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-theatre-table-sql
+      author: atquil
+      comment: "Creating Theatre Table - Linked to Partner"
+      dbms: postgresql
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE seat_saga_theatre (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                partner_id BIGINT NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                city VARCHAR(100) NOT NULL,
+                address TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_theatre_partner FOREIGN KEY (partner_id)
+                  REFERENCES seat_saga_partner(id)
+              );
+              COMMENT ON TABLE seat_saga_theatre IS 'Stores theatres owned by partners';
+      rollback:
+        - sql:
+            sql: |
+              DROP TABLE IF EXISTS seat_saga_theatre;

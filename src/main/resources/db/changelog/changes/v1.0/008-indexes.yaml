@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-indexes-sql
+      author: atquil
+      comment: "Creating indexes for performance optimization"
+      dbms: postgresql
+      changes:
+        - sql:
+            sql: |
+              CREATE INDEX idx_showseat_show_status
+              ON seat_saga_show_seat (show_id, status);
+
+              CREATE INDEX idx_show_time
+              ON seat_saga_show (start_time, end_time);
+
+              CREATE INDEX idx_booking_user_time
+              ON seat_saga_booking (user_id, booking_time);
+      rollback:
+        - sql:
+            sql: |
+              DROP INDEX IF EXISTS idx_showseat_show_status;
+              DROP INDEX IF EXISTS idx_show_time;
+              DROP INDEX IF EXISTS idx_booking_user_time;

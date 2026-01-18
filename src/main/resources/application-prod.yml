@@ -1,0 +1,102 @@
+# ============================================
+# 🎭 Seat Saga Platform - BASE CONFIG
+# ============================================
+# Default configuration when NO profile is active.
+# Contains ONLY common settings shared across ALL environments.
+# ============================================
+
+spring:
+  config:
+    activate:
+      on-profile: "default"   # Runs when no specific profile is set
+
+  # ============================================
+  # 🗄️ DATABASE CONFIGURATION (Common)
+  # ============================================
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}               # MUST be set via environment variables
+    username: ${SPRING_DATASOURCE_USERNAME}     # Never hardcode credentials
+    password: ${SPRING_DATASOURCE_PASSWORD}     # Use Key Vault/Secrets in prod
+    driver-class-name: org.postgresql.Driver    # Fixed for PostgreSQL
+
+    hikari:
+      maximum-pool-size: 10                     # Max connections
+      minimum-idle: 2                           # Min idle connections
+      connection-timeout: 30000                 # 30s timeout
+      idle-timeout: 600000                      # 10m idle timeout
+      max-lifetime: 1800000                     # 30m max connection lifetime
+
+  # ============================================
+  # ⚙️ JPA / HIBERNATE CONFIGURATION
+  # ============================================
+  jpa:
+    hibernate:
+      ddl-auto: validate                        # Validate schema, never auto-create/update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false                         # Prevents LazyInitializationException
+
+  # ============================================
+  # 🔄 LIQUIBASE CONFIGURATION
+  # ============================================
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml  # Entry point
+    enabled: true                               # Master switch
+
+    default-schema: ${SPRING_LIQUIBASE_DEFAULT_SCHEMA:public}    # Schema for objects
+    liquibase-schema: ${SPRING_LIQUIBASE_SCHEMA:public}          # Schema for Liquibase tables
+
+    # Safety settings
+    drop-first: false                           # NEVER true in production
+    clear-checksums: false                      # Only for dev debugging
+
+    # Logging
+    show-summary: summary                       # Options: OFF, SUMMARY, VERBOSE
+
+
+# ============================================
+# 🌐 APPLICATION SETTINGS
+# ============================================
+server:
+  port: 8080                                   # Default port
+  shutdown: graceful                           # Wait for requests to finish
+
+
+# ============================================
+# 📊 LOGGING SETTINGS
+# ============================================
+logging:
+  level:
+    root: INFO                                 # Production-safe default
+    liquibase: INFO
+
+
+# ============================================
+# 📈 MANAGEMENT & METRICS
+# ============================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus # Expose key actuator endpoints
+  prometheus:
+    metrics:
+      export:
+        enabled: true                          # Enable Prometheus metrics export
+
+
+# ============================================
+# 📖 API DOCUMENTATION (Springdoc / Swagger)
+# ============================================
+springdoc:
+  api-docs:
+    path: /api-docs                            # OpenAPI JSON spec endpoint
+  swagger-ui:
+    path: /swagger-ui.html                     # Swagger UI endpoint
+    operations-sorter: method                  # Sort operations by HTTP method
+
+
+# ============================================
+# 🛠️ Seat Saga Custom Properties
+# ============================================
+# Application-specific configuration for booking, payment, pricing, and partner onboarding.
+
