@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01-create-partner-and-theatre
+      author: atquil
+      comment: "B2B Core Tables"
+      dbms: postgresql
+      context: local, dev, prod
+      changes:
+        - sql:
+            sql: |
+              -- 1. Partners
+              CREATE TABLE seat_saga_partner (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                contact_email VARCHAR(255) NOT NULL UNIQUE,
+                api_key VARCHAR(255) NOT NULL UNIQUE,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
+              COMMENT ON TABLE seat_saga_partner IS 'Stores theatre partners (B2B)';
+
+              -- 2. Theatres
+              CREATE TABLE theatre (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                partner_id BIGINT NOT NULL REFERENCES seat_saga_partner(id),
+                name VARCHAR(255) NOT NULL,
+                city VARCHAR(100) NOT NULL,
+                address TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
+              CREATE INDEX idx_theatre_city ON theatre(city);
+              COMMENT ON TABLE theatre IS 'Physical theatre locations by city';
+              COMMENT ON INDEX idx_theatre_city IS 'Fast city-based theatre search';
+      rollback:
+        - sql:
+            sql: |
+              DROP INDEX IF EXISTS idx_theatre_city;
+              DROP TABLE IF EXISTS theatre CASCADE;
+              DROP TABLE IF EXISTS seat_saga_partner CASCADE;
+

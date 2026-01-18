@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 04-create-users-bookings-inventory
+      author: atquil
+      comment: "B2C Users, Bookings, and Show Seat Inventory"
+      dbms: postgresql
+      context: local, dev, prod
+      changes:
+        - sql:
+            sql: |
+              -- 7. Users (For Google Auth)
+              CREATE TABLE app_user (
+                 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                 email VARCHAR(255) NOT NULL UNIQUE,
+                 name VARCHAR(255),
+                 google_sub VARCHAR(255) UNIQUE,
+                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
+              COMMENT ON TABLE app_user IS 'B2C end customers (Google OAuth)';
+
+              -- 8. Bookings
+              CREATE TABLE booking (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                user_id BIGINT NOT NULL REFERENCES app_user(id),
+                show_id BIGINT NOT NULL REFERENCES show(id),
+                booking_reference VARCHAR(50) NOT NULL UNIQUE,
+                status VARCHAR(20) NOT NULL,
+                total_amount DECIMAL(10, 2) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
+              COMMENT ON TABLE booking IS 'Customer booking orders';
+
+              -- 9. Show Seats (The Inventory)
+              CREATE TABLE show_seat (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                show_id BIGINT NOT NULL REFERENCES show(id),
+                seat_id BIGINT NOT NULL REFERENCES seat(id),
+                booking_id BIGINT REFERENCES booking(id),
+                status VARCHAR(20) DEFAULT 'AVAILABLE',
+                price DECIMAL(10, 2) NOT NULL,
+                version INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(show_id, seat_id)
+              );
+              CREATE INDEX idx_show_seat_status ON show_seat(show_id, status);
+              COMMENT ON TABLE show_seat IS 'Dynamic seat inventory per show (concurrency control)';
+              COMMENT ON INDEX idx_show_seat_status IS 'Fast availability checks';
+      rollback:
+        - sql:
+            sql: |
+              DROP INDEX IF EXISTS idx_show_seat_status;
+              DROP TABLE IF EXISTS show_seat CASCADE;
+              DROP TABLE IF EXISTS booking CASCADE;
+              DROP TABLE IF EXISTS app_user CASCADE;

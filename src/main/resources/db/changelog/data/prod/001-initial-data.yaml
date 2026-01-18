@@ -1,45 +1,51 @@
 databaseChangeLog:
   - changeSet:
-      id: insert-initial-data-sql
+      id: 01-seed-data
       author: atquil
-      comment: "Seeding demo data for partners, theatres, movies, shows, and seats"
-      dbms: postgresql
+      context: prod
       changes:
         - sql:
             sql: |
-              -- 👥 Demo Partner
-              INSERT INTO seat_saga_partner (name, contact_email, api_key)
-              VALUES ('Demo Partner', 'partner@example.com', 'APIKEY123');
+              -- Seed Partner
+              INSERT INTO seat_saga_partner (name, contact_email, api_key) 
+              VALUES ('PVR Cinemas', 'contact@pvr.com', 'pk_test_12345');
 
-              -- 🎭 Demo Theatre
-              INSERT INTO seat_saga_theatre (partner_id, name, city, address)
-              VALUES (1, 'Grand Theatre', 'Bengaluru', 'MG Road, Bengaluru');
+              -- Seed Theatre
+              INSERT INTO theatre (partner_id, name, city, address)
+              VALUES ((SELECT id FROM seat_saga_partner LIMIT 1), 'PVR Koramangala', 'Bengaluru', 'Forum Mall, Koramangala');
 
-              -- 🖥️ Demo Screen
-              INSERT INTO seat_saga_screen (theatre_id, name, seat_layout_json)
-              VALUES (1, 'Screen 1', '{"rows":10,"cols":20}');
+              -- Seed Screen
+              INSERT INTO screen (theatre_id, name, total_seats)
+              VALUES ((SELECT id FROM theatre LIMIT 1), 'Screen 1', 10);
 
-              -- 🎬 Demo Movie
-              INSERT INTO seat_saga_movie (title, language, genre, duration_mins, release_date)
-              VALUES ('Inception', 'English', 'Sci-Fi', 148, '2010-07-16');
+              -- Seed Seats (Rows A and B, 5 seats each)
+              INSERT INTO seat (screen_id, row_number, seat_number, seat_type)
+              SELECT (SELECT id FROM screen LIMIT 1), 'A', s, 'REGULAR' FROM generate_series(1, 5) AS s;
+              
+              INSERT INTO seat (screen_id, row_number, seat_number, seat_type)
+              SELECT (SELECT id FROM screen LIMIT 1), 'B', s, 'PREMIUM' FROM generate_series(1, 5) AS s;
 
-              -- ⏰ Demo Show
-              INSERT INTO seat_saga_show (movie_id, screen_id, start_time, end_time)
-              VALUES (1, 1, '2026-01-18 18:00:00', '2026-01-18 21:00:00');
+              -- Seed Movie
+              INSERT INTO movie (title, duration_minutes, genre)
+              VALUES ('Inception', 148, 'Sci-Fi');
 
-              -- 💺 Demo Seats
-              INSERT INTO seat_saga_show_seat (show_id, seat_number, status, price)
-              VALUES 
-                (1, 'A1', 'AVAILABLE', 250.00),
-                (1, 'A2', 'AVAILABLE', 250.00),
-                (1, 'A3', 'AVAILABLE', 250.00);
+              -- Seed Show (Tomorrow at 6 PM)
+              INSERT INTO show (movie_id, screen_id, start_time, end_time, base_price)
+              VALUES (
+                (SELECT id FROM movie LIMIT 1), 
+                (SELECT id FROM screen LIMIT 1), 
+                NOW() + INTERVAL '1 day', 
+                NOW() + INTERVAL '1 day' + INTERVAL '148 minutes', 
+                250.00
+              );
 
-      rollback:
-        - sql:
-            sql: |
-              DELETE FROM seat_saga_show_seat WHERE show_id = 1;
-              DELETE FROM seat_saga_show WHERE id = 1;
-              DELETE FROM seat_saga_movie WHERE id = 1;
-              DELETE FROM seat_saga_screen WHERE id = 1;
-              DELETE FROM seat_saga_theatre WHERE id = 1;
-              DELETE FROM seat_saga_partner WHERE id = 1;
+              -- Seed ShowSeats Inventory (Cartesian product of seats + show)
+              INSERT INTO show_seat (show_id, seat_id, status, price)
+              SELECT 
+                sh.id, 
+                s.id, 
+                'AVAILABLE',
+                CASE WHEN s.seat_type = 'PREMIUM' THEN sh.base_price + 100 ELSE sh.base_price END
+              FROM show sh
+              CROSS JOIN seat s
+              WHERE sh.screen_id = s.screen_id;

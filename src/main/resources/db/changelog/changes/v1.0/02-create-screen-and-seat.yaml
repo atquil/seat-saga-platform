@@ -1,0 +1,37 @@
+databaseChangeLog:
+  - changeSet:
+      id: 02-create-screen-and-seat
+      author: atquil
+      comment: "Screen and Physical Seat Templates"
+      dbms: postgresql
+      context: local, dev, prod
+      changes:
+        - sql:
+            sql: |
+              -- 3. Screens
+              CREATE TABLE screen (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                theatre_id BIGINT NOT NULL REFERENCES theatre(id),
+                name VARCHAR(50) NOT NULL,
+                total_seats INTEGER DEFAULT 0,
+                seat_layout_json JSONB,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
+              COMMENT ON TABLE screen IS 'Individual screens/halls in theatres';
+
+              -- 4. Physical Seats (Template for Shows)
+              CREATE TABLE seat (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                screen_id BIGINT NOT NULL REFERENCES screen(id),
+                row_number VARCHAR(5) NOT NULL,
+                seat_number INTEGER NOT NULL,
+                seat_type VARCHAR(20) DEFAULT 'REGULAR',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(screen_id, row_number, seat_number)
+              );
+              COMMENT ON TABLE seat IS 'Physical seat layout templates per screen';
+      rollback:
+        - sql:
+            sql: |
+              DROP TABLE IF EXISTS seat CASCADE;
+              DROP TABLE IF EXISTS screen CASCADE;

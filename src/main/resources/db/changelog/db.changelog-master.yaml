@@ -41,10 +41,6 @@ databaseChangeLog:
       # ❗ Recommendation: Use false for consistency
       # ❗ Alternative: Use include with specific file names
       relativeToChangelogFile: false
-
-  # ============================================
-  # 📊 LOCAL DEVELOPMENT DATA
-  # ============================================
   - includeAll:
       path: db/changelog/data/local/
       relativeToChangelogFile: false
