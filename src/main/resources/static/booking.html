@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seat Saga - Book Tickets</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #222; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        h1 { margin-bottom: 10px; color: #e50914; }
+        .screen { background: #fff; height: 10px; width: 300px; margin: 20px 0; box-shadow: 0 3px 10px rgba(255,255,255,0.7); border-radius: 5px; }
+        .screen-text { font-size: 12px; color: #aaa; margin-bottom: 20px; }
+
+        .theatre { display: grid; grid-template-columns: repeat(5, 50px); gap: 10px; margin-bottom: 30px; }
+
+        .seat {
+            width: 40px; height: 40px;
+            background: #444;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; transition: 0.2s;
+        }
+        .seat:hover { background: #666; }
+        .seat.selected { background: #00d632; color: black; font-weight: bold; box-shadow: 0 0 10px #00d632; }
+        .seat.occupied { background: #b30000; cursor: not-allowed; }
+
+        .controls { display: flex; gap: 20px; margin-bottom: 20px; }
+        .btn { padding: 10px 30px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-book { background: #e50914; color: white; }
+        .btn-book:hover { background: #f40612; }
+
+        #status { min-height: 20px; color: #ffeb3b; font-weight: bold; margin-top: 10px; }
+        #error { color: #ff4d4d; font-weight: bold; margin-top: 10px; display: none; }
+
+        /* Loading spinner */
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #e50914; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<h1 id="movieTitle">Loading...</h1>
+<p id="theatreInfo">...</p>
+
+<div class="screen"></div>
+<div class="screen-text">SCREEN THIS WAY</div>
+
+<div class="theatre" id="seatContainer">
+    <!-- Seats will be injected here -->
+</div>
+
+<div class="controls">
+    <span class="seat" style="background: #444; width: 20px; height: 20px;"></span> Available
+    <span class="seat" style="background: #00d632; width: 20px; height: 20px;"></span> Selected
+    <span class="seat" style="background: #b30000; width: 20px; height: 20px;"></span> Occupied
+</div>
+
+<button class="btn btn-book" onclick="bookTickets()">Confirm Booking</button>
+
+<div id="status"></div>
+<div id="error"></div>
+
+<script>
+    let selectedSeatIds = [];
+    const urlParams = new URLSearchParams(window.location.search);
+    const showId = urlParams.get('showId');
+
+    if (!showId) {
+        document.getElementById('movieTitle').innerText = 'Error';
+        document.getElementById('theatreInfo').innerText = '';
+        document.getElementById('error').innerText = 'Missing show ID in URL. Please use a link from search page.';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('seatContainer').innerHTML = '';
+    } else {
+        loadShowData();  // only call if we have showId
+    }
+
+    async function loadShowData() {
+        const seatContainer = document.getElementById('seatContainer');
+        seatContainer.innerHTML = '<div class="loader"></div>'; // Show spinner
+
+        try {
+            // Fetch show details
+            const showResponse = await fetch(`/api/shows/${showId}`);
+            if (!showResponse.ok) throw new Error(`Show fetch failed: ${showResponse.status}`);
+            const showDetails = await showResponse.json();
+            document.getElementById('movieTitle').innerText = showDetails.movieTitle;
+            document.getElementById('theatreInfo').innerText = `${showDetails.theatreName} - ${showDetails.screenName} - ${new Date(showDetails.startTime).toLocaleString()}`;
+
+            // Fetch seats
+            const seatsResponse = await fetch(`/api/shows/${showId}/seats`);
+            if (!seatsResponse.ok) throw new Error(`Seats fetch failed: ${seatsResponse.status}`);
+            const seats = await seatsResponse.json();
+
+            seatContainer.innerHTML = ''; // Clear spinner
+
+            seats.forEach(seat => {
+                const seatEl = document.createElement('div');
+                seatEl.className = 'seat';
+                seatEl.dataset.id = seat.seatId;
+                seatEl.innerText = `${seat.row}${seat.number}`; // e.g., A1
+
+                if (seat.status === 'LOCKED') {
+                    seatEl.classList.add('occupied');
+                } else {
+                    seatEl.onclick = () => toggleSeat(seatEl, seat.seatId);
+                }
+
+                seatContainer.appendChild(seatEl);
+            });
+        } catch (err) {
+            console.error(err);
+            document.getElementById('movieTitle').innerText = 'Error Loading Show';
+            document.getElementById('error').innerText = err.message;
+            document.getElementById('error').style.display = 'block';
+            seatContainer.innerHTML = ''; // Clear spinner
+        }
+    }
+
+    function toggleSeat(seatEl, seatId) {
+        if (seatEl.classList.contains('selected')) {
+            seatEl.classList.remove('selected');
+            selectedSeatIds = selectedSeatIds.filter(id => id !== seatId);
+        } else {
+            seatEl.classList.add('selected');
+            selectedSeatIds.push(seatId);
+        }
+    }
+
+    async function bookTickets() {
+        const statusEl = document.getElementById('status');
+        const errorEl = document.getElementById('error');
+        errorEl.style.display = 'none';
+
+        if (selectedSeatIds.length === 0) {
+            statusEl.innerText = "Please select at least one seat!";
+            statusEl.style.color = "#ffeb3b";
+            return;
+        }
+
+        statusEl.innerText = "Processing...";
+        statusEl.style.color = "white";
+
+        try {
+            const response = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    showId: showId,
+                    seatIds: selectedSeatIds
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                statusEl.innerText = `✅ Success! Booking Ref: ${data.bookingReference}`;
+                statusEl.style.color = "#00d632";
+                // Mark booked seats as occupied
+                selectedSeatIds.forEach(id => {
+                    const seat = document.querySelector(`.seat[data-id='${id}']`);
+                    seat.classList.remove('selected');
+                    seat.classList.add('occupied');
+                    seat.onclick = null;
+                });
+                selectedSeatIds = [];
+            } else {
+                throw new Error(data.message || 'Booking failed');
+            }
+        } catch (err) {
+            console.error(err);
+            errorEl.innerText = `❌ Error: ${err.message}`;
+            errorEl.style.display = 'block';
+            statusEl.innerText = '';
+        }
+    }
+
+
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 package com.atquil.seatsagaplatform.entity;
 
 import com.atquil.seatsagaplatform.constants.SeatStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +23,7 @@ public class ShowSeat extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "show_id", nullable = false)
+    @JsonIgnore
     private Show show;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -2,7 +2,7 @@
 
 # Configuration
 DB_CONTAINER_NAME="seat-saga-db"
-APP_CONTAINER_NAME="app" # Matches the service name in docker-compose.yml
+APP_CONTAINER_NAME="seat-saga-api" # Matches the service name in docker-compose.yml
 COMPOSE_FILES="-f docker-compose.yml -f docker-compose.local.yml"
 
 show_access_points() {
@@ -40,6 +40,10 @@ start_app() {
 
     show_access_points
 }
+show_logs() {
+    echo "📋 Tailing logs for container: $APP_CONTAINER_NAME..."
+    docker compose logs -f $APP_CONTAINER_NAME
+}
 
 stop_app() {
     echo "🛑 Stopping Seat Saga containers..."
@@ -59,7 +63,7 @@ case "$1" in
     start)    start_app ;;
     stop)     stop_app ;;
     restart)  stop_app; start_app ;;
-    logs)     docker compose logs -f $APP_CONTAINER_NAME ;;
+    logs)     show_logs ;;
     db-check) check_db ;;
     urls)     show_access_points ;;
     clean)    docker compose $COMPOSE_FILES down -v ;;

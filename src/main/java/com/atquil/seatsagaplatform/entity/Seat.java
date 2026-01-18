@@ -1,5 +1,6 @@
 package com.atquil.seatsagaplatform.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,7 @@ public class Seat extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "screen_id", nullable = false)
+    @JsonIgnore
     private Screen screen;
 
     @Column(name = "row_number", nullable = false, length = 5)

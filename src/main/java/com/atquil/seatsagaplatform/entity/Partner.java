@@ -1,5 +1,6 @@
 package com.atquil.seatsagaplatform.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,5 +35,6 @@ public class Partner extends BaseEntity {
     // Relationships
     @Builder.Default
     @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Theatre> theatres = new ArrayList<>();
 }

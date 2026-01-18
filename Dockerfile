@@ -7,11 +7,11 @@ WORKDIR /builder
 
 # Copy the JAR file built by Gradle into the container
 # (Gradle typically outputs to build/libs/)
-COPY build/libs/seat-saga-platform.jar app.jar
+COPY build/libs/seat-saga-platform.jar seat-saga-api.jar
 
 # Use Spring Boot's layertools to extract the JAR into layers
 # This splits dependencies, loader, snapshots, and application code
-RUN java -Djarmode=layertools -jar app.jar extract
+RUN java -Djarmode=layertools -jar seat-saga-api.jar extract
 
 
 # --- STAGE 2: Runner ---
