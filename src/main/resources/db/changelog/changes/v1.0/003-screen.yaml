@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-screen-table-sql
+      author: atquil
+      comment: "Creating Screen Table - Linked to Theatre"
+      dbms: postgresql
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE seat_saga_screen (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                theatre_id BIGINT NOT NULL,
+                name VARCHAR(100) DEFAULT 'Screen 1',
+                seat_layout_json JSONB,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_screen_theatre FOREIGN KEY (theatre_id)
+                  REFERENCES seat_saga_theatre(id)
+              );
+              COMMENT ON TABLE seat_saga_screen IS 'Screens inside a theatre';
+      rollback:
+        - sql:
+            sql: |
+              DROP TABLE IF EXISTS seat_saga_screen;

@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-show-seat-table-sql
+      author: atquil
+      comment: "Creating Show Seat Table - Inventory of seats per show"
+      dbms: postgresql
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE seat_saga_show_seat (
+                id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                show_id BIGINT NOT NULL,
+                seat_number VARCHAR(10) NOT NULL,
+                status VARCHAR(20) NOT NULL,
+                price DECIMAL(10,2) NOT NULL,
+                booking_id BIGINT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_showseat_show FOREIGN KEY (show_id)
+                  REFERENCES seat_saga_show(id),
+                CONSTRAINT fk_showseat_booking FOREIGN KEY (booking_id)
+                  REFERENCES seat_saga_booking(id)
+                  ON DELETE SET NULL
+              );
+              COMMENT ON TABLE seat_saga_show_seat IS 'Seat inventory for each show';
+      rollback:
+        - sql:
+            sql: |
+              DROP TABLE IF EXISTS seat_saga_show_seat;

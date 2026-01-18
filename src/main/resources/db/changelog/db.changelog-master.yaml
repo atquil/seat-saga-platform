@@ -1,0 +1,56 @@
+# ============================================
+# 🎯 MASTER CHANGELOG
+# ============================================
+# Purpose: Root entry point for all database migrations
+# Location: src/main/resources/db/changelog/
+# ============================================
+# ❗ CRITICAL: This file orchestrates ALL database changes
+# ❗ NEVER modify deployed changesets (creates checksum errors)
+# ============================================
+
+# ============================================
+# ⚠️ IMPORTANT NOTES
+# ============================================
+
+# 🚨 EXECUTION ORDER
+# 1. Files are included in the order listed
+# 2. Within directories, files are processed alphabetically
+# 3. Use numeric prefixes for ordering: 01-, 02-, etc.
+
+# 🔒 CONTEXT STRATEGY
+# Spring Boot sets: spring.liquibase.contexts=local
+# Result: Only changesets with context='local' OR no context will run
+
+# 📊 AUDIT TRAIL
+# All executed changesets are recorded in:
+# 1. DATABASECHANGELOG table (what ran)
+# 2. DATABASECHANGELOGLOCK table (prevents concurrent runs)
+
+databaseChangeLog:
+  # ============================================
+  # 📁 SCHEMA CHANGES (Version 1.0)
+  # ============================================
+  # Purpose: Include all structural changes for version 1.0
+  # Path: Relative to classpath root
+  # Best Practice: Organize by release version
+  - includeAll:
+      path: db/changelog/changes/v1.0/
+      # 🧭 PATH RESOLUTION STRATEGY
+      # relativeToChangelogFile: false → Relative to classpath root
+      # relativeToChangelogFile: true → Relative to THIS file's location
+      # ❗ Recommendation: Use false for consistency
+      # ❗ Alternative: Use include with specific file names
+      relativeToChangelogFile: false
+
+  # ============================================
+  # 📊 LOCAL DEVELOPMENT DATA
+  # ============================================
+  - includeAll:
+      path: db/changelog/data/local/
+      relativeToChangelogFile: false
+      context: local
+
+  - includeAll:
+      path: db/changelog/data/prod/
+      relativeToChangelogFile: false
+      context: prod

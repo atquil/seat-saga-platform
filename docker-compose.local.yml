@@ -1,0 +1,93 @@
+services:
+  # ============================================
+  # 🗄️ LOCAL POSTGRES DATABASE
+  # ============================================
+  # Ephemeral container seeded with test data
+  # Data persists via named volume (removed with docker-compose down -v)
+
+  # Need to push the userId and Password to applicaiton, but in production we will use secrets
+  # Local DEVELOPMENT DATABASE ONLY - Ephemeral, seeded with test data
+  postgres-local:
+    image: postgres:15-alpine       # Lightweight PostgreSQL
+    container_name: seat-saga-db
+    # 🔐 DATABASE CREDENTIALS (Local-only hardcoding)
+    # ❗ These are SAFE because:
+    # 1. Only runs on localhost (127.0.0.1:5432)
+    # 2. Never pushed to production
+    # 3. Reset with `docker-compose down -v`
+    environment:
+      POSTGRES_USER: myuser          # DB user created at container startup
+      POSTGRES_PASSWORD: mypassword  # Password for that user
+      POSTGRES_DB: seat-saga-db              # Database name created automatically
+
+
+    # 🔌 NETWORK EXPOSURE (Security: localhost only)
+    # 5432:5432 → Exposes PostgreSQL to all interfaces (0.0.0.0), accessible from any host on the network
+    # 127.0.0.1:5432 → Only accessible from your machine
+    # 0.0.0.0:5432   → Accessible from network (insecure for local)
+    ports:
+      - "127.0.0.1:5432:5432"              # Secure: localhost only
+
+    # 💾 DATA PERSISTENCE
+    # Named volume preserves data across container restarts
+    # Remove with: docker-compose down -v
+    volumes:
+      - pgdata:/var/lib/postgresql/data # Named volume 'pgdata' persists data even if the container is removed.
+
+    # 🌐 NETWORK CONNECTIVITY
+    # Important: We tell the local DB to join the Base Network so that they can talk(present in docker.compose.yml)
+    networks:
+      - app-network        # Join app's network
+    # 🩺 HEALTH CHECKING
+    # Ensures Postgres is ready before app starts
+    healthcheck:
+      # 'pg_isready' checks if Postgres is accepting connections.
+      test: [ "CMD-SHELL", "pg_isready -U myuser -d mydb" ]
+      interval: 5s   # Run health check every 5 seconds
+      timeout: 3s    # Fail if check takes more than 3 seconds
+      retries: 20    # Mark container as unhealthy only after 20 failures
+
+  app:
+
+    # === Local SPECIFIC CONFIG ===
+    # 🔌 1. PORT MAPPING (Local accessibility):
+    # We map ports to localhost so you can access APIs and Debuggers.
+    ports:
+      - "8080:8080"  # App URL
+      - "5005:5005"  # Remote Debugging Port (JDWP)
+
+    # ⛓️ 2. DEPENDENCIES
+    # Wait for Postgres to be healthy before starting
+    depends_on:
+      postgres-local:
+        condition: service_healthy
+
+    # 🌡️ 3. ENVIRONMENT OVERRIDES (Local-specific)
+    # Set profile to 'local' to enable verbose logging in Spring Boot.
+    # Enable the Java Debug Agent.
+    environment:
+      # 🎯 PROFILE SELECTION
+      - SPRING_PROFILES_ACTIVE=local      # Activates application-local.yml
+
+      # 🐞 DEBUGGING CONFIGURATION
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+
+      # 🗄️ DATASOURCE CONFIGURATION
+      # Points to Docker container, not localhost
+      # OVERRIDE: Point to the Docker container hostname 'postgres-local' instead of 'localhost'
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-local:5432/seat-saga-db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=mypassword
+
+
+    # 🔄 4. RESTART POLICY (Development mode)
+    # "no" -> If the app crashes, stop the container.
+    # We want to see the stack trace in the terminal immediately, not an infinite restart loop.
+    restart: "no"
+
+# ============================================
+# 📁 VOLUME DEFINITIONS (Local only)
+# ============================================
+# Named volume declaration. Docker manages its location.
+volumes:
+  pgdata:
