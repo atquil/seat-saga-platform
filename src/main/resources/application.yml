@@ -17,7 +17,8 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: email,profile
 
-#  config:
+
+  #  config:
 #    activate:
 #      on-profile: "default"   # Runs when no specific profile is set
   # ============================================
