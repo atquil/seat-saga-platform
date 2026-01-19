@@ -4,6 +4,7 @@ import com.atquil.seatsagaplatform.entity.Show;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Optional;
 /**
  * @author atquil
  */
+@Repository
 public interface ShowRepository extends JpaRepository<Show, Long> {
 
     @Query("""
@@ -39,4 +41,9 @@ public interface ShowRepository extends JpaRepository<Show, Long> {
         WHERE s.id = :id
     """)
     Optional<Show> findByIdWithDetails(@Param("id") Long id);
+
+    List<Show> findByScreenId(Long screenId);
+
+    @Query("SELECT s FROM Show s JOIN s.screen sc WHERE sc.theatre.id = :theatreId")
+    List<Show> findByScreenTheatreId(@Param("theatreId") Long theatreId);
 }

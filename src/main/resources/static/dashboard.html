@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seat Saga - Dashboard</title>
-
-    <!-- Optional: Include Font Awesome for icons (used in the monitoring button) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
           integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
           crossorigin="anonymous" referrerpolicy="no-referrer" />
-
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -67,37 +64,6 @@
             margin: 0;
             font-size: 0.95rem;
         }
-        .highlight-card {
-            position: relative;
-        }
-        .highlight-card::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 6px;
-            background: linear-gradient(to bottom, #8b5cf6, #a78bfa);
-            border-radius: 12px 0 0 12px;
-        }
-        .hero-btn {
-            margin: 1.5rem 0 2.5rem 0;
-            display: inline-block;
-            background: #6366f1;
-            color: white;
-            padding: 0.9rem 2rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-        }
-        .hero-btn:hover {
-            background: #4f46e5;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
-        }
         .logout-btn {
             margin-top: 3rem;
             display: inline-block;
@@ -119,38 +85,29 @@
 <body>
 
 <div class="container">
-    <h1>🚀 Seat Saga Developer Dashboard</h1>
-
-    <!-- Hero button to Monitoring Dashboard -->
-    <a href="/health-dashboard.html" class="hero-btn">
-        <i class="fas fa-heart-pulse" style="margin-right: 10px;"></i>
-        Open Monitoring Dashboard
-    </a>
-
-    <p class="intro">You are authenticated. Choose a tool to continue:</p>
+    <h1>🚀 Seat Saga Dashboard</h1>
+    <p class="intro">Choose your portal:</p>
 
     <div class="grid">
+        <a href="/admin-dashboard.html" class="card" style="border-left: 6px solid #ff9800;">
+            <h2>🛠️ Admin Portal</h2>
+            <p>Onboard partners, theaters, movies & more</p>
+        </a>
+
+        <a href="/user-dashboard.html" class="card" style="border-left: 6px solid #4caf50;">
+            <h2>🍿 User Portal</h2>
+            <p>Search shows & book tickets</p>
+        </a>
+
+        <a href="/health-dashboard.html" class="card" style="border-left: 6px solid #6366f1;">
+            <h2>📊 Monitoring Dashboard</h2>
+            <p>System health & metrics</p>
+        </a>
 
         <a href="/swagger-ui.html" class="card">
             <h2>📚 Swagger UI</h2>
-            <p>Test and explore API endpoints interactively</p>
+            <p>Test APIs</p>
         </a>
-
-        <a href="/api-docs" target="_blank" class="card">
-            <h2>📄 OpenAPI Spec</h2>
-            <p>Raw JSON OpenAPI 3.0 documentation</p>
-        </a>
-
-        <a href="/booking.html" class="card" style="border-left: 6px solid #e50914;">
-            <h2>🎟️ Book Tickets</h2>
-            <p>Interactive visual seat selection demo</p>
-        </a>
-
-        <a href="/search.html" class="card" style="border-left: 6px solid #28a745;">
-            <h2>🔍 Browse Shows</h2>
-            <p>Search movies & shows by city</p>
-        </a>
-
     </div>
 
     <a href="/logout" class="logout-btn">Logout</a>

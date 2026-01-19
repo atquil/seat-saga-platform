@@ -9,7 +9,7 @@ show_access_points() {
     echo ""
     echo "📊 Access Points"
     echo "-------------------------------------------------------"
-    echo "🎬 Application:  http://localhost:8080"
+    echo "🎬 Application:  http://localhost:8080/"
     echo "📚 Swagger UI:   http://localhost:8080/swagger-ui.html"
     echo "📊 Health Check: http://localhost:8080/actuator/health"
     echo "📄 API Docs:     http://localhost:8080/api-docs"

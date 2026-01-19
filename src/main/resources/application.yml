@@ -109,3 +109,12 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html                     # Swagger UI endpoint
     operations-sorter: method                  # Sort operations by HTTP method
+# ============================================
+# Applicaiton Sprcific Configuration
+# ============================================
+pricing:
+  regular: ${REGULAR_PRICE:0}
+  premium: ${PREMIUM_PRICE:100}
+  recliner: ${RECLINER_PRICE:100}
+  vip: ${VIP_PRICE:150}
+  accessible: ${ACCESSIBLE_PRICE:0}

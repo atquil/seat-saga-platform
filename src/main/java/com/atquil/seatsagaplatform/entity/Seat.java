@@ -1,5 +1,6 @@
 package com.atquil.seatsagaplatform.entity;
 
+import com.atquil.seatsagaplatform.constants.SeatType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +30,7 @@ public class Seat extends BaseEntity {
     @Column(name = "seat_number", nullable = false)
     private Integer seatNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "seat_type")
-    private String seatType; // e.g., REGULAR, PREMIUM, RECLINER
+    private SeatType seatType; // e.g., REGULAR, PREMIUM, RECLINER
 }
