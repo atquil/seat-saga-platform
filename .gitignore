@@ -35,3 +35,13 @@ out/
 
 ### VS Code ###
 .vscode/
+# Sensitive Data
+.env
+*.env
+
+
+target/
+
+# Azure/Terraform local state (if you use them later)
+.azure/
+.terraform/
