@@ -2,7 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 002-add-search-demo-data
       author: atquil
-      context: local
+      context: local, dev, prod
       changes:
         - sql:
             sql: |

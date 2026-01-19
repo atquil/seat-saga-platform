@@ -44,9 +44,3 @@ databaseChangeLog:
   - includeAll:
       path: db/changelog/data/local/
       relativeToChangelogFile: false
-      context: local
-
-  - includeAll:
-      path: db/changelog/data/prod/
-      relativeToChangelogFile: false
-      context: prod
