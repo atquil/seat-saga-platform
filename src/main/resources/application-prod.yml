@@ -8,7 +8,7 @@
 spring:
   config:
     activate:
-      on-profile: "default"   # Runs when no specific profile is set
+      on-profile: "prod"   # Runs when no specific profile is set
 
   # ============================================
   # 🗄️ DATABASE CONFIGURATION (Common)
