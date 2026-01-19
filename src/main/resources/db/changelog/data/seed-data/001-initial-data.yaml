@@ -2,7 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 01-seed-data
       author: atquil
-      context: local
+      context: local, dev, prod
       changes:
         - sql:
             sql: |

@@ -42,11 +42,5 @@ databaseChangeLog:
       # ❗ Alternative: Use include with specific file names
       relativeToChangelogFile: false
   - includeAll:
-      path: db/changelog/data/local/
+      path: db/changelog/data/seed-data/
       relativeToChangelogFile: false
-      context: local
-
-  - includeAll:
-      path: db/changelog/data/prod/
-      relativeToChangelogFile: false
-      context: prod
