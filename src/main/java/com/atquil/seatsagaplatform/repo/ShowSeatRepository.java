@@ -4,12 +4,14 @@ import com.atquil.seatsagaplatform.entity.ShowSeat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
  * @author atquil
  */
+@Repository
 public interface ShowSeatRepository extends JpaRepository<ShowSeat, Long> {
 
     // Fetch specific seats for a specific show

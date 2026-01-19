@@ -18,7 +18,7 @@ import java.util.List;
 @Builder
 public class Theatre extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "partner_id", nullable = false)
     private Partner partner;
 

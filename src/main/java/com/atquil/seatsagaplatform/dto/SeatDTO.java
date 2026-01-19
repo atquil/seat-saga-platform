@@ -2,13 +2,16 @@ package com.atquil.seatsagaplatform.dto;
 
 import com.atquil.seatsagaplatform.constants.SeatStatus;
 
+import java.math.BigDecimal;
+
 /**
  * @author atquil
  */
 public record SeatDTO(
-        Long showSeatId,
+        Long id,
         Long seatId,
-        String row,
-        int number,
-        SeatStatus status
+        String rowNumber,
+        Integer seatNumber,
+        SeatStatus status,
+        BigDecimal price  // Added price field
 ) {}

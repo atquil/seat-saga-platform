@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeatSaga - Book Movie Tickets</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .main-card { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .step-circle { width: 50px; height: 50px; border-radius: 50%; background: #4caf50; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto; }
+        .step-active { background: #4caf50; }
+        .step-inactive { background: #e0e0e0; color: #666; }
+        .seat-map { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; margin: 20px auto; max-width: 500px; }
+        .seat { width: 35px; height: 35px; border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; }
+        .seat-available { background: #d1ecf1; border: 2px solid #0dcaf0; }
+        .seat-selected { background: #4caf50; color: white; border: 2px solid #2e7d32; }
+        .seat-booked { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; cursor: not-allowed; }
+        .screen { background: #333; color: white; padding: 10px; text-align: center; margin: 30px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="main-card p-4 p-md-5">
+
+                <!-- Global Navigation Bar -->
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <div>
+                        <h2 class="text-primary mb-0">
+                            <i class="bi bi-film"></i> SeatSaga Booking
+                        </h2>
+                        <small class="text-muted">Secure movie ticket booking</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm me-2" onclick="goToDashboard()">
+                            <i class="bi bi-house"></i> Main Dashboard
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="logout()">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <h1 class="display-5 fw-bold text-primary">
+                        <i class="bi bi-film"></i> SeatSaga
+                    </h1>
+                    <p class="text-muted">Book your movie tickets in 3 easy steps</p>
+
+                    <!-- Progress Steps -->
+                    <div class="d-flex justify-content-between align-items-center mb-5" style="max-width: 500px; margin: 0 auto;">
+                        <div class="text-center">
+                            <div class="step-circle step-active">1</div>
+                            <div class="mt-2 fw-bold">Search Shows</div>
+                        </div>
+                        <div style="flex: 1; height: 2px; background: #e0e0e0; margin: 0 10px;"></div>
+                        <div class="text-center">
+                            <div class="step-circle step-inactive">2</div>
+                            <div class="mt-2 text-muted">Select Seats</div>
+                        </div>
+                        <div style="flex: 1; height: 2px; background: #e0e0e0; margin: 0 10px;"></div>
+                        <div class="text-center">
+                            <div class="step-circle step-inactive">3</div>
+                            <div class="mt-2 text-muted">Confirm Booking</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Search Shows -->
+                <div id="step-1">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3><i class="bi bi-search me-2"></i> Find Your Show</h3>
+                        <div>
+                            <button class="btn btn-outline-secondary me-2" onclick="goToDashboard()">
+                                <i class="bi bi-house"></i> Dashboard
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="logout()">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">City</label>
+                            <select class="form-select" id="citySelect">
+                                <option value="">Select City</option>
+                                <!-- Cities will be loaded dynamically -->
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Movie</label>
+                            <select class="form-select" id="movieSelect">
+                                <option value="">Select Movie</option>
+                                <!-- Movies will be loaded dynamically -->
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" id="dateSelect" value="">
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button class="btn btn-primary btn-lg px-5" onclick="searchShows()">
+                            <i class="bi bi-search me-2"></i> Search Shows
+                        </button>
+                    </div>
+
+                    <!-- Search Results -->
+                    <div id="searchResults" class="mt-5" style="display: none;">
+                        <h4 class="mb-3">Available Shows</h4>
+                        <div id="showsList" class="list-group">
+                            <!-- Shows will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Select Seats (Hidden initially) -->
+                <div id="step-2" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3><i class="bi bi-ticket-perforated me-2"></i> Select Your Seats</h3>
+                        <div>
+                            <button class="btn btn-outline-secondary me-2" onclick="goToDashboard()">
+                                <i class="bi bi-house"></i> Dashboard
+                            </button>
+                            <button class="btn btn-outline-secondary me-2" onclick="backToSearch()">
+                                <i class="bi bi-arrow-left"></i> Back to Search
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="logout()">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Show Info -->
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 id="showMovieTitle" class="card-title"></h5>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted">Theatre:</small>
+                                            <p id="showTheatreName" class="fw-bold mb-1"></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Time:</small>
+                                            <p id="showTime" class="fw-bold mb-1"></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Screen:</small>
+                                            <p id="showScreenName" class="fw-bold mb-1"></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Price:</small>
+                                            <p id="showBasePrice" class="fw-bold mb-1"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Seat Map -->
+                            <div class="text-center">
+                                <div class="screen">SCREEN</div>
+                                <div id="seatMap" class="seat-map">
+                                    <!-- Seats will be generated here -->
+                                </div>
+
+                                <div class="mt-4">
+                                    <div class="d-inline-flex align-items-center me-4">
+                                        <div class="seat seat-available me-2"></div>
+                                        <span>Available</span>
+                                    </div>
+                                    <div class="d-inline-flex align-items-center me-4">
+                                        <div class="seat seat-selected me-2"></div>
+                                        <span>Selected</span>
+                                    </div>
+                                    <div class="d-inline-flex align-items-center">
+                                        <div class="seat seat-booked me-2"></div>
+                                        <span>Booked</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- Booking Summary -->
+                            <div class="card sticky-top" style="top: 20px;">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0"><i class="bi bi-receipt"></i> Booking Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <small class="text-muted">Selected Seats:</small>
+                                        <div id="selectedSeatsList" class="mt-1"></div>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Seats (<span id="seatCount">0</span>):</span>
+                                        <span>$<span id="seatTotal">0.00</span></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-2">
+                                        <span>Service Fee:</span>
+                                        <span>$<span id="serviceFee">2.00</span></span>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between fw-bold">
+                                        <span>Total:</span>
+                                        <span>$<span id="totalAmount">2.00</span></span>
+                                    </div>
+
+                                    <button class="btn btn-success btn-lg w-100 mt-4" onclick="proceedToBooking()" disabled id="bookButton">
+                                        <i class="bi bi-lock"></i> Book Now
+                                    </button>
+
+                                    <div class="alert alert-warning mt-3 small">
+                                        <i class="bi bi-info-circle"></i> Selected seats will be locked for 10 minutes during booking.
+                                    </div>
+
+                                    <!-- Quick Navigation Links -->
+                                    <div class="mt-4 pt-3 border-top">
+                                        <small class="text-muted d-block mb-2">Quick Links:</small>
+                                        <a href="#" onclick="goToDashboard()" class="d-block mb-1 text-decoration-none">
+                                            <i class="bi bi-house me-1"></i> Back to Main Dashboard
+                                        </a>
+                                        <a href="#" onclick="backToSearch()" class="d-block mb-1 text-decoration-none">
+                                            <i class="bi bi-search me-1"></i> Search Another Show
+                                        </a>
+                                        <a href="#" onclick="logout()" class="d-block text-decoration-none text-danger">
+                                            <i class="bi bi-box-arrow-right me-1"></i> Logout
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Confirm Booking (Hidden initially) -->
+                <div id="step-3" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h3><i class="bi bi-check-circle me-2"></i> Confirm Booking</h3>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-secondary me-2" onclick="goToDashboard()">
+                                <i class="bi bi-house"></i> Dashboard
+                            </button>
+                            <button class="btn btn-outline-secondary me-2" onclick="backToSeatSelection()">
+                                <i class="bi bi-arrow-left"></i> Back to Seats
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="logout()">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card mb-4">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="bi bi-check-circle"></i> Booking Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-4">
+                                        <div class="col-md-4 text-center">
+                                            <div class="mb-2">
+                                                <small class="text-muted">Movie</small>
+                                                <h5 id="confirmMovieTitle"></h5>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <div class="mb-2">
+                                                <small class="text-muted">Theatre & Time</small>
+                                                <h5 id="confirmTheatreTime"></h5>
+                                                <p id="confirmScreen" class="text-muted small"></p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <div class="mb-2">
+                                                <small class="text-muted">Seats</small>
+                                                <h5 id="confirmSeatsCount"></h5>
+                                                <p id="confirmSeatsList" class="text-muted small"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i>
+                                        Your seats will be locked for 10 minutes. Complete payment to confirm booking.
+                                    </div>
+
+                                    <!-- Payment Method Selection -->
+                                    <div class="mb-4">
+                                        <h5>Payment Method</h5>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="cardPayment" checked>
+                                            <label class="form-check-label" for="cardPayment">
+                                                <i class="bi bi-credit-card"></i> Credit/Debit Card
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="upiPayment">
+                                            <label class="form-check-label" for="upiPayment">
+                                                <i class="bi bi-phone"></i> UPI
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="walletPayment">
+                                            <label class="form-check-label" for="walletPayment">
+                                                <i class="bi bi-wallet"></i> Digital Wallet
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Details (shown by default) -->
+                                    <div id="cardDetails">
+                                        <h5>Card Details</h5>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Card Number</label>
+                                                <input type="text" class="form-control" placeholder="1234 5678 9012 3456" id="cardNumber">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Expiry</label>
+                                                <input type="text" class="form-control" placeholder="MM/YY" id="cardExpiry">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">CVV</label>
+                                                <input type="text" class="form-control" placeholder="123" id="cardCVV">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label">Name on Card</label>
+                                                <input type="text" class="form-control" placeholder="John Doe" id="cardName">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- UPI Details (hidden by default) -->
+                                    <div id="upiDetails" style="display: none;">
+                                        <h5>UPI Details</h5>
+                                        <div class="mb-3">
+                                            <label class="form-label">UPI ID</label>
+                                            <input type="email" class="form-control" placeholder="username@upi" id="upiId">
+                                        </div>
+                                    </div>
+
+                                    <!-- Wallet Details (hidden by default) -->
+                                    <div id="walletDetails" style="display: none;">
+                                        <h5>Wallet Details</h5>
+                                        <div class="mb-3">
+                                            <label class="form-label">Select Wallet</label>
+                                            <select class="form-select" id="walletSelect">
+                                                <option value="paytm">PayTM</option>
+                                                <option value="phonepe">PhonePe</option>
+                                                <option value="googlepay">Google Pay</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card sticky-top" style="top: 20px;">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0"><i class="bi bi-receipt"></i> Payment Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tbody>
+                                        <tr>
+                                            <td>Ticket Price:</td>
+                                            <td class="text-end">$<span id="confirmTicketPrice">0.00</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Convenience Fee:</td>
+                                            <td class="text-end">$<span id="confirmConvFee">2.00</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Taxes:</td>
+                                            <td class="text-end">$<span id="confirmTaxes">1.50</span></td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="fw-bold">Total Amount:</td>
+                                            <td class="text-end fw-bold">$<span id="confirmTotal">3.50</span></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="termsCheck">
+                                        <label class="form-check-label small" for="termsCheck">
+                                            I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Cancellation Policy</a>
+                                        </label>
+                                    </div>
+
+                                    <button class="btn btn-success btn-lg w-100" onclick="confirmBooking()" id="confirmButton">
+                                        <i class="bi bi-lock-fill"></i> Confirm & Pay $<span id="payAmount">0.00</span>
+                                    </button>
+
+                                    <div class="alert alert-warning mt-3 small">
+                                        <i class="bi bi-shield-check"></i> Your payment is secured with 256-bit SSL encryption
+                                    </div>
+
+                                    <!-- Quick Navigation Links -->
+                                    <div class="mt-4 pt-3 border-top">
+                                        <small class="text-muted d-block mb-2">Quick Links:</small>
+                                        <a href="#" onclick="goToDashboard()" class="d-block mb-1 text-decoration-none">
+                                            <i class="bi bi-house me-1"></i> Back to Main Dashboard
+                                        </a>
+                                        <a href="#" onclick="startNewBooking()" class="d-block mb-1 text-decoration-none">
+                                            <i class="bi bi-plus-circle me-1"></i> Book Another Show
+                                        </a>
+                                        <a href="#" onclick="logout()" class="d-block text-decoration-none text-danger">
+                                            <i class="bi bi-box-arrow-right me-1"></i> Logout
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Configuration
+    const API_BASE = 'http://localhost:8080/api';
+    let selectedShow = null;
+    let selectedSeats = [];
+    let seatPrices = {};
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        loadCities();
+        loadMovies();
+        document.getElementById('dateSelect').valueAsDate = new Date();
+    });
+
+    // Navigation functions
+    function goToDashboard() {
+        if (confirm('Are you sure? Your current booking progress will be lost.')) {
+            window.location.href = 'dashboard.html';
+        }
+    }
+
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('userToken');
+            localStorage.removeItem('bookingData');
+            window.location.href = 'index.html';
+        }
+    }
+
+    // Load available cities
+    async function loadCities() {
+        try {
+            const res = await fetch(`${API_BASE}/cities`);
+            if (res.ok) {
+                const cities = await res.json();
+                const select = document.getElementById('citySelect');
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    select.appendChild(option);
+                });
+            } else {
+                // Fallback cities if API not implemented yet
+                const fallbackCities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'];
+                const select = document.getElementById('citySelect');
+                fallbackCities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    select.appendChild(option);
+                });
+            }
+        } catch (err) {
+            console.error('Failed to load cities:', err);
+            // Fallback
+            const fallbackCities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'];
+            const select = document.getElementById('citySelect');
+            fallbackCities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                select.appendChild(option);
+            });
+        }
+    }
+
+    // Load movies
+    async function loadMovies() {
+        try {
+            const res = await fetch(`${API_BASE}/movies`);
+            const movies = await res.json();
+            const select = document.getElementById('movieSelect');
+            movies.forEach(movie => {
+                const option = document.createElement('option');
+                option.value = movie.id;
+                option.textContent = `${movie.title} (${movie.durationMinutes} min)`;
+                select.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Failed to load movies:', err);
+        }
+    }
+
+
+    // Search shows
+    async function searchShows() {
+        const city = document.getElementById('citySelect').value;
+        const movieId = document.getElementById('movieSelect').value;
+        const dateInput = document.getElementById('dateSelect').value;
+
+        if (!city || !movieId) {
+            alert('Please select city and movie');
+            return;
+        }
+
+        try {
+            // Format date to YYYY-MM-DD
+            let date = dateInput;
+            if (!date) {
+                const today = new Date();
+                date = today.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+            }
+
+            // CORRECTED: Use the exact API endpoint format from your curl command
+            const url = `${API_BASE}/shows/search?city=${encodeURIComponent(city)}&movieId=${movieId}&date=${date}`;
+            console.log('Fetching from:', url); // Debug log
+
+            const res = await fetch(url, {
+                headers: {
+                    'accept': '*/*' // Add the accept header from curl
+                }
+            });
+
+            if (!res.ok) {
+                throw new Error(`API Error: ${res.status} - ${res.statusText}`);
+            }
+
+            const theatres = await res.json();
+            console.log('Received data:', theatres); // Debug log
+
+            displaySearchResults(theatres);
+        } catch (err) {
+            console.error('Search failed:', err);
+            alert(`Failed to search shows: ${err.message}`);
+        }
+    }
+
+    // Display search results
+    function displaySearchResults(theatres) {
+        const container = document.getElementById('showsList');
+        container.innerHTML = '';
+
+        if (!theatres || theatres.length === 0) {
+            container.innerHTML = '<div class="alert alert-info">No shows found for your search</div>';
+            document.getElementById('searchResults').style.display = 'block';
+            return;
+        }
+
+        theatres.forEach(theatre => {
+            const theatreCard = document.createElement('div');
+            theatreCard.className = 'card mb-3';
+            theatreCard.innerHTML = `
+            <div class="card-body">
+                <h5 class="card-title">${theatre.theatreName}</h5>
+                <p class="card-text text-muted">${theatre.address}</p>
+                <div class="mt-3">
+                    <h6>Show Times:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        ${theatre.shows.map(show => `
+                            <button class="btn btn-outline-primary btn-sm"
+                                    onclick="selectShow(${show.showId}, ${theatre.theatreId}, '${theatre.theatreName}', '${show.screenName}', '${show.startTime}', 15.00)">
+                                ${formatTime(show.startTime)} - ${show.language}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+            container.appendChild(theatreCard);
+        });
+
+        document.getElementById('searchResults').style.display = 'block';
+    }
+
+    // Format time
+    function formatTime(dateTimeStr) {
+        const date = new Date(dateTimeStr);
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Select a show
+    function selectShow(showId, theatreId, theatreName, screenName, startTime, price) {
+        selectedShow = { showId, theatreId, theatreName, screenName, startTime, price };
+
+        // Update step 2 display
+        document.getElementById('showMovieTitle').textContent =
+            document.getElementById('movieSelect').selectedOptions[0].text.split(' (')[0];
+        document.getElementById('showTheatreName').textContent = theatreName;
+        document.getElementById('showScreenName').textContent = screenName;
+        document.getElementById('showTime').textContent = formatTime(startTime);
+        document.getElementById('showBasePrice').textContent = `$${price}`;
+
+        // Switch to step 2
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('step-2').style.display = 'block';
+
+        // Update progress steps
+        document.querySelectorAll('.step-circle')[1].classList.remove('step-inactive');
+        document.querySelectorAll('.step-circle')[1].classList.add('step-active');
+
+        // Load seats for this show
+        loadSeats(showId);
+    }
+
+    // Back to search
+    function backToSearch() {
+        selectedShow = null;
+        selectedSeats = [];
+
+        document.getElementById('step-2').style.display = 'none';
+        document.getElementById('step-1').style.display = 'block';
+
+        // Reset progress steps
+        document.querySelectorAll('.step-circle')[1].classList.remove('step-active');
+        document.querySelectorAll('.step-circle')[1].classList.add('step-inactive');
+        document.querySelectorAll('.step-circle')[2].classList.remove('step-active');
+        document.querySelectorAll('.step-circle')[2].classList.add('step-inactive');
+    }
+
+    // Load seats for a show
+    async function loadSeats(showId) {
+        try {
+            const res = await fetch(`${API_BASE}/shows/${showId}/seats`);
+            if (res.ok) {
+                const seats = await res.json();
+                displaySeatMap(seats);
+            } else {
+                createDummySeatMap();
+            }
+        } catch (err) {
+            console.error('Failed to load seats:', err);
+            createDummySeatMap();
+        }
+    }
+
+    // Create dummy seat map (for testing)
+    function createDummySeatMap() {
+        const seatMap = document.getElementById('seatMap');
+        seatMap.innerHTML = '';
+
+        const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
+        const seatsPerRow = 10;
+
+        rows.forEach(row => {
+            for (let i = 1; i <= seatsPerRow; i++) {
+                const seat = document.createElement('div');
+                seat.className = 'seat seat-available';
+                seat.textContent = `${row}${i}`;
+                seat.dataset.seatId = `${row}-${i}`;
+                seat.dataset.price = Math.random() > 0.3 ? '12.50' : '15.00';
+
+                if (Math.random() > 0.8) {
+                    seat.className = 'seat seat-booked';
+                    seat.style.cursor = 'not-allowed';
+                } else {
+                    seat.onclick = () => toggleSeatSelection(seat);
+                }
+
+                seatMap.appendChild(seat);
+            }
+        });
+    }
+
+    // Display seat map (when API is fixed)
+    function displaySeatMap(seats) {
+        const seatMap = document.getElementById('seatMap');
+        seatMap.innerHTML = '';
+
+        if (!seats || seats.length === 0) {
+            seatMap.innerHTML = '<div class="alert alert-info">No seat data available</div>';
+            return;
+        }
+
+        // Group seats by row
+        const seatsByRow = {};
+        seats.forEach(seat => {
+            if (!seatsByRow[seat.rowNumber]) {
+                seatsByRow[seat.rowNumber] = [];
+            }
+            seatsByRow[seat.rowNumber].push(seat);
+        });
+
+        // Create seat grid
+        Object.keys(seatsByRow).sort().forEach(row => {
+            seatsByRow[row].sort((a, b) => a.seatNumber - b.seatNumber).forEach(seat => {
+                const seatElement = document.createElement('div');
+                seatElement.className = `seat seat-${seat.status.toLowerCase()}`;
+                seatElement.textContent = `${seat.rowNumber}${seat.seatNumber}`;
+                seatElement.dataset.seatId = seat.id;
+                seatElement.dataset.price = seat.price || '12.50';
+
+                if (seat.status === 'AVAILABLE') {
+                    seatElement.onclick = () => toggleSeatSelection(seatElement);
+                } else {
+                    seatElement.style.cursor = 'not-allowed';
+                }
+
+                seatMap.appendChild(seatElement);
+            });
+        });
+    }
+
+    // Toggle seat selection
+    function toggleSeatSelection(seatElement) {
+        const seatId = seatElement.dataset.seatId;
+        const seatPrice = parseFloat(seatElement.dataset.price);
+
+        if (seatElement.classList.contains('seat-selected')) {
+            // Deselect
+            seatElement.classList.remove('seat-selected');
+            seatElement.classList.add('seat-available');
+            selectedSeats = selectedSeats.filter(s => s.id !== seatId);
+        } else {
+            // Select
+            seatElement.classList.remove('seat-available');
+            seatElement.classList.add('seat-selected');
+            selectedSeats.push({
+                id: seatId,
+                label: seatElement.textContent,
+                price: seatPrice
+            });
+        }
+
+        updateBookingSummary();
+    }
+
+    // Update booking summary
+    function updateBookingSummary() {
+        const seatList = document.getElementById('selectedSeatsList');
+        seatList.innerHTML = selectedSeats.map(seat =>
+            `<span class="badge bg-success me-1">${seat.label}</span>`
+        ).join('');
+
+        const seatCount = selectedSeats.length;
+        const seatTotal = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+        const serviceFee = 2.00;
+        const totalAmount = seatTotal + serviceFee;
+
+        document.getElementById('seatCount').textContent = seatCount;
+        document.getElementById('seatTotal').textContent = seatTotal.toFixed(2);
+        document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+
+        // Enable/disable book button
+        document.getElementById('bookButton').disabled = seatCount === 0;
+    }
+
+    // Proceed to booking
+    function proceedToBooking() {
+        if (selectedSeats.length === 0) {
+            alert('Please select at least one seat');
+            return;
+        }
+
+        // Update confirmation details
+        document.getElementById('confirmMovieTitle').textContent =
+            document.getElementById('movieSelect').selectedOptions[0].text.split(' (')[0];
+
+        const showTime = formatTime(selectedShow.startTime);
+        document.getElementById('confirmTheatreTime').textContent =
+            `${selectedShow.theatreName} | ${showTime}`;
+        document.getElementById('confirmScreen').textContent = `Screen: ${selectedShow.screenName}`;
+
+        document.getElementById('confirmSeatsCount').textContent = `${selectedSeats.length} seats`;
+        document.getElementById('confirmSeatsList').textContent =
+            selectedSeats.map(s => s.label).join(', ');
+
+        // Calculate prices
+        const ticketPrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+        const convenienceFee = 2.00;
+        const taxes = ticketPrice * 0.18;
+        const totalAmount = ticketPrice + convenienceFee + taxes;
+
+        document.getElementById('confirmTicketPrice').textContent = ticketPrice.toFixed(2);
+        document.getElementById('confirmTaxes').textContent = taxes.toFixed(2);
+        document.getElementById('confirmTotal').textContent = totalAmount.toFixed(2);
+        document.getElementById('payAmount').textContent = totalAmount.toFixed(2);
+
+        // Switch to step 3
+        document.getElementById('step-2').style.display = 'none';
+        document.getElementById('step-3').style.display = 'block';
+
+        // Update progress steps
+        document.querySelectorAll('.step-circle')[2].classList.remove('step-inactive');
+        document.querySelectorAll('.step-circle')[2].classList.add('step-active');
+
+        // Setup payment method toggle
+        setupPaymentMethods();
+    }
+
+    // Setup payment method selection
+    function setupPaymentMethods() {
+        const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
+        paymentMethods.forEach(method => {
+            method.addEventListener('change', function() {
+                document.getElementById('cardDetails').style.display = 'none';
+                document.getElementById('upiDetails').style.display = 'none';
+                document.getElementById('walletDetails').style.display = 'none';
+
+                if (this.id === 'cardPayment') {
+                    document.getElementById('cardDetails').style.display = 'block';
+                } else if (this.id === 'upiPayment') {
+                    document.getElementById('upiDetails').style.display = 'block';
+                } else if (this.id === 'walletPayment') {
+                    document.getElementById('walletDetails').style.display = 'block';
+                }
+            });
+        });
+    }
+
+    // Back to seat selection
+    function backToSeatSelection() {
+        document.getElementById('step-3').style.display = 'none';
+        document.getElementById('step-2').style.display = 'block';
+
+        document.querySelectorAll('.step-circle')[2].classList.remove('step-active');
+        document.querySelectorAll('.step-circle')[2].classList.add('step-inactive');
+    }
+
+    // Confirm booking and make API call
+    async function confirmBooking() {
+        const termsCheck = document.getElementById('termsCheck');
+        if (!termsCheck.checked) {
+            alert('Please agree to the Terms & Conditions');
+            return;
+        }
+
+        // Prepare booking request
+        const bookingRequest = {
+            showId: selectedShow.showId,
+            seatIds: selectedSeats.map(seat => seat.id),
+            totalAmount: parseFloat(document.getElementById('confirmTotal').textContent)
+        };
+
+        try {
+            // Show loading
+            const confirmButton = document.getElementById('confirmButton');
+            confirmButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+            confirmButton.disabled = true;
+
+            // Call booking API
+            const response = await fetch(`${API_BASE}/bookings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bookingRequest)
+            });
+
+            if (response.ok) {
+                const bookingResponse = await response.json();
+                showBookingSuccess(bookingResponse);
+            } else {
+                throw new Error('Booking failed');
+            }
+        } catch (error) {
+            console.error('Booking error:', error);
+            alert('Booking failed. Please try again.');
+
+            // Reset button
+            const confirmButton = document.getElementById('confirmButton');
+            confirmButton.innerHTML = `<i class="bi bi-lock-fill"></i> Confirm & Pay $${document.getElementById('payAmount').textContent}`;
+            confirmButton.disabled = false;
+        }
+    }
+
+    // Show booking success
+    function showBookingSuccess(bookingResponse) {
+        const successHTML = `
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="text-success mb-3">Booking Confirmed!</h2>
+                <p class="lead">Your tickets have been booked successfully.</p>
+
+                <div class="card mx-auto mt-4" style="max-width: 400px;">
+                    <div class="card-body">
+                        <h5 class="card-title">Booking Details</h5>
+                        <p class="mb-1"><strong>Booking ID:</strong> ${bookingResponse.bookingReference || 'BSG-' + Date.now()}</p>
+                        <p class="mb-1"><strong>Show:</strong> ${document.getElementById('confirmMovieTitle').textContent}</p>
+                        <p class="mb-1"><strong>Seats:</strong> ${selectedSeats.map(s => s.label).join(', ')}</p>
+                        <p class="mb-1"><strong>Amount Paid:</strong> $${document.getElementById('confirmTotal').textContent}</p>
+                        <p class="mb-0"><strong>Status:</strong> <span class="badge bg-success">CONFIRMED</span></p>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <p class="text-muted">An email confirmation has been sent to your registered email address.</p>
+                    <div class="mt-4">
+                        <button class="btn btn-primary me-2" onclick="downloadTicket()">
+                            <i class="bi bi-download"></i> Download Ticket
+                        </button>
+                        <button class="btn btn-outline-primary me-2" onclick="startNewBooking()">
+                            <i class="bi bi-plus-circle"></i> Book Another Show
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="goToDashboard()">
+                            <i class="bi bi-house"></i> Back to Dashboard
+                        </button>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-outline-danger btn-sm" onclick="logout()">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('step-3').innerHTML = successHTML;
+    }
+
+    // Download ticket (mock function)
+    function downloadTicket() {
+        alert('Ticket download feature would be implemented here');
+    }
+
+    // Start new booking
+    function startNewBooking() {
+        selectedShow = null;
+        selectedSeats = [];
+
+        document.getElementById('step-3').style.display = 'none';
+        document.getElementById('step-1').style.display = 'block';
+        document.getElementById('searchResults').style.display = 'none';
+
+        document.getElementById('citySelect').value = '';
+        document.getElementById('movieSelect').value = '';
+        document.getElementById('dateSelect').valueAsDate = new Date();
+
+        document.querySelectorAll('.step-circle').forEach((circle, index) => {
+            circle.classList.remove('step-active');
+            circle.classList.add('step-inactive');
+            if (index === 0) {
+                circle.classList.add('step-active');
+            }
+        });
+    }
+</script>
+</body>
+</html>
