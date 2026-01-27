@@ -34,4 +34,13 @@ public interface ShowSeatRepository extends JpaRepository<ShowSeat, Long> {
     // Recent activity
     @Query("SELECT COUNT(s) FROM ShowSeat s WHERE s.status = 'BOOKED' AND s.createdAt <= :since")
     long countRecentBookings(LocalDateTime since);
+
+    @Query("SELECT ss FROM ShowSeat ss " +
+            "WHERE ss.show.id = :showId " +
+            "AND ss.seat.rowNumber = :row " +
+            "AND ss.seat.seatNumber = :seatNumber")
+    ShowSeat findByShowIdAndRowAndSeatNumber(
+            @Param("showId") Long showId,
+            @Param("row") String row,
+            @Param("seatNumber") Integer seatNumber);
 }
