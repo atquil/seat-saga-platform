@@ -91,6 +91,9 @@ management:
     web:
       exposure:
         include: health,info,metrics,prometheus,seat-saga-stats # Expose key actuator endpoints
+  endpoint:
+    seat-saga-stats:
+      enabled: true
   prometheus:
     metrics:
       export:
