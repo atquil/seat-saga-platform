@@ -30,6 +30,8 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/webjars/**"
                         ).permitAll()
+                        // Permiting actuator
+                        .requestMatchers("/actuator/**").permitAll()
 
                         // 2. All other requests require Authentication
                         .anyRequest().authenticated()
