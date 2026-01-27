@@ -28,10 +28,11 @@ public class SecurityConfig {
                                 "/error",
                                 "/css/**",
                                 "/js/**",
-                                "/webjars/**"
+                                "/webjars/**",
+                                "/actuator/**",
+                                "/actuator"
                         ).permitAll()
-                        // Permiting actuator
-                        .requestMatchers("/actuator/**").permitAll()
+
 
                         // 2. All other requests require Authentication
                         .anyRequest().authenticated()
