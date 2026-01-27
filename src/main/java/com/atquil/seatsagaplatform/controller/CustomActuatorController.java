@@ -23,7 +23,7 @@ import java.util.Map;
 @Component
 @Endpoint(id = "seat-saga-stats")
 @RequiredArgsConstructor
-public class CustomActuatorController{
+public class CustomActuatorController {
 
     private final ShowSeatRepository showSeatRepository;
     private final UserRepository appUserRepository;
@@ -91,4 +91,3 @@ public class CustomActuatorController{
         return stats;
     }
 }
-

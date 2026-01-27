@@ -14,4 +14,5 @@ import java.util.Optional;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     Optional<Booking> findByBookingReference(String bookingReference);
     long countByCreatedAtAfter(LocalDateTime date);
+
 }

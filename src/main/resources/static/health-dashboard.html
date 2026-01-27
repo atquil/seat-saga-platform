@@ -4,15 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Seat Saga • Monitoring Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-          integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
     <style>
         :root {
             --primary: #6366f1;
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --info: #3b82f6;
             --dark: #1f2937;
             --gray: #6b7280;
             --bg: #f8fafc;
@@ -29,17 +30,71 @@
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             color: var(--dark);
             min-height: 100vh;
-            padding: 2.5rem 1rem;
         }
 
+        /* User Info Bar */
+        .user-bar {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+        }
+
+        .user-details h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .user-details p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            margin-left: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main Container */
         .container {
-            max-width: 1280px;
-            margin: 0 auto;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
         }
 
         header {
             text-align: center;
             margin-bottom: 3rem;
+            padding-top: 1rem;
         }
 
         h1 {
@@ -53,10 +108,11 @@
             font-size: 1.2rem;
         }
 
+        /* Grid Layout */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-            gap: 1.8rem;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
         }
 
         .card {
@@ -64,86 +120,106 @@
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            transform: translateY(-5px);
         }
 
         .card-header {
-            padding: 1.4rem 1.8rem;
+            padding: 1.2rem 1.5rem;
             background: var(--primary);
             color: white;
             font-weight: 600;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             display: flex;
             align-items: center;
             gap: 0.8rem;
         }
 
-        .status-badge {
-            padding: 0.4rem 1rem;
-            border-radius: 2rem;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-left: auto;
-        }
-
-        .up    { background: var(--success); }
-        .down  { background: var(--danger); }
-        .warn  { background: var(--warning); color: black; }
-
         .card-body {
-            padding: 1.6rem;
+            padding: 1.5rem;
         }
 
-        .metric-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid #f0f0f0;
+        /* Card Sizes */
+        .card-full { grid-column: span 12; }
+        .card-large { grid-column: span 8; }
+        .card-medium { grid-column: span 6; }
+        .card-small { grid-column: span 4; }
+
+        /* Metric Cards */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
         }
 
-        .metric-item:last-child {
-            border-bottom: none;
+        .metric-card {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0.5rem 0;
         }
 
         .metric-label {
             color: var(--gray);
-            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .metric-value {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--dark);
+        /* Chart Containers */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
         }
 
+        /* Status Badges */
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .up { background: var(--success); color: white; }
+        .down { background: var(--danger); color: white; }
+        .warn { background: var(--warning); color: black; }
+
+        /* Loading & Error States */
         .loading, .error {
             text-align: center;
-            padding: 6rem 1rem;
+            padding: 3rem;
             color: var(--gray);
-            font-size: 1.3rem;
+            font-size: 1.1rem;
         }
 
+        /* Refresh Button */
         .refresh-btn {
             position: fixed;
-            bottom: 2.5rem;
-            right: 2.5rem;
-            width: 64px;
-            height: 64px;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: var(--primary);
             color: white;
             border: none;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             cursor: pointer;
             box-shadow: 0 6px 20px rgba(99,102,241,0.35);
-            transition: all 0.3s;
             z-index: 1000;
+            transition: all 0.3s;
         }
 
         .refresh-btn:hover {
@@ -151,39 +227,73 @@
             background: #4f46e5;
         }
 
-        @media (max-width: 800px) {
-            .grid { grid-template-columns: 1fr; }
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .card-large { grid-column: span 12; }
+            .card-medium { grid-column: span 12; }
+            .card-small { grid-column: span 6; }
+        }
+
+        @media (max-width: 768px) {
+            .card-small { grid-column: span 12; }
+            .user-bar { flex-direction: column; gap: 1rem; }
+            .nav-links a { margin: 0 0.5rem; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <div style="position: absolute; top: 20px; right: 20px;">
-            <a href="dashboard.html" style="text-decoration: none; color: #6366f1; font-weight: 600; margin-right: 15px; background: white; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="/logout" style="text-decoration: none; color: #ef4444; font-weight: 600; background: white; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
+<!-- User Info Bar -->
+<div class="user-bar" id="user-bar">
+    <div class="user-info">
+        <img id="user-avatar" src="" alt="User" class="user-avatar">
+        <div class="user-details">
+            <h3 id="user-name">Loading...</h3>
+            <p id="user-email"></p>
         </div>
-        <h1>Seat Saga Monitoring</h1>
-        <p class="subtitle">Real-time system health • key metrics • status overview</p>
-    </header>
-
-    <div class="grid" id="dashboard-content">
-        <!-- Cards will be injected here -->
+    </div>
+    <div class="nav-links">
+        <a href="/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/swagger-ui.html"><i class="fas fa-book"></i> API Docs</a>
+        <a href="/health-dashboard.html" style="background: var(--primary); color: white;">
+            <i class="fas fa-heart-pulse"></i> Health Monitor
+        </a>
+        <a href="/logout" style="color: var(--danger);">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
     </div>
 </div>
 
-<button class="refresh-btn" onclick="loadDashboard()" title="Refresh now">
+<!-- Main Dashboard -->
+<div class="container">
+    <header>
+        <h1>Seat Saga Monitoring Dashboard</h1>
+        <p class="subtitle">Real-time system health, metrics, and user analytics</p>
+    </header>
+
+    <div class="grid" id="dashboard-content">
+        <!-- Content will be injected here -->
+    </div>
+</div>
+
+<button class="refresh-btn" onclick="loadDashboard()" title="Refresh Dashboard">
     <i class="fas fa-sync-alt"></i>
 </button>
 
 <script>
-    const dashboard = document.getElementById('dashboard-content');
+    // Global variables
+    let userData = null;
+    let platformStats = null;
+    let healthData = null;
 
+    // DOM Elements
+    const dashboard = document.getElementById('dashboard-content');
+    const userBar = document.getElementById('user-bar');
+    const userName = document.getElementById('user-name');
+    const userEmail = document.getElementById('user-email');
+    const userAvatar = document.getElementById('user-avatar');
+
+    // Fetch JSON utility
     async function fetchJson(url) {
         try {
             const res = await fetch(url);
@@ -195,127 +305,368 @@
         }
     }
 
-    function createHealthCard(health) {
-        if (!health) return '';
+    // Load user info from custom endpoint
+    async function loadUserInfo() {
+        const data = await fetchJson('/actuator/seat-saga-stats');
+        if (data && data.current_user && data.current_user.authenticated) {
+            userData = data.current_user;
 
-        const status = health.status || 'UNKNOWN';
-        const isUp = status === 'UP';
-        const badgeClass = isUp ? 'up' : (status === 'DOWN' ? 'down' : 'warn');
+            // Update UI
+            userName.textContent = userData.name || 'User';
+            userEmail.textContent = userData.email || '';
 
-        let componentsHtml = '';
-        if (health.components) {
-            componentsHtml = Object.entries(health.components)
-                .map(([key, value]) => `
-                <div class="metric-item">
-                    <span class="metric-label">${key.replace(/-/g, ' ').toUpperCase()}</span>
-                    <span class="metric-value">${value.status || '—'}</span>
-                </div>
-            `).join('');
-        }
-
-        return `
-        <div class="card">
-            <div class="card-header">
-                <i class="fas ${isUp ? 'fa-heart-pulse' : 'fa-heart-broken'}"></i>
-                Application Health
-                <span class="status-badge ${badgeClass}">${status}</span>
-            </div>
-            <div class="card-body">
-                ${componentsHtml || '<p style="color:#9ca3af;text-align:center;padding:2rem;">No detailed components available</p>'}
-            </div>
-        </div>
-    `;
-    }
-
-    function createInfoCard(info) {
-        if (!info || Object.keys(info).length === 0) return '';
-
-        const items = Object.entries(info)
-            .map(([key, value]) => `
-            <div class="metric-item">
-                <span class="metric-label">${key.replace(/-/g, ' ').toUpperCase()}</span>
-                <span class="metric-value">${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</span>
-            </div>
-        `).join('');
-
-        return `
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-info-circle"></i>
-                Application Info
-            </div>
-            <div class="card-body">
-                ${items}
-            </div>
-        </div>
-    `;
-    }
-
-    async function createMetricsCard() {
-        const metricsToShow = [
-            { name: 'jvm.memory.used',        label: 'JVM Memory Used',      unit: 'MB',    divisor: 1024*1024 },
-            { name: 'process.cpu.usage',       label: 'CPU Usage',            unit: '%',     divisor: 1,     digits: 2 },
-            { name: 'process.uptime',          label: 'Application Uptime',   unit: 's',     divisor: 1,     digits: 0 },
-            { name: 'http.server.requests',    label: 'Total HTTP Requests',  unit: '',      divisor: 1,     digits: 0 },
-            { name: 'jdbc.connections.active', label: 'Active DB Connections',unit: '',      divisor: 1,     digits: 0 },
-            { name: 'jvm.threads.live',        label: 'Live Threads',         unit: '',      divisor: 1,     digits: 0 }
-        ];
-
-        let html = `
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-chart-line"></i>
-                Key Metrics
-            </div>
-            <div class="card-body">
-    `;
-
-        for (const m of metricsToShow) {
-            const data = await fetchJson(`/actuator/metrics/${m.name}`);
-            let displayValue = '—';
-
-            if (data?.measurements?.[0]?.value != null) {
-                let val = data.measurements[0].value;
-                if (m.divisor) val /= m.divisor;
-                displayValue = m.digits != null ? val.toFixed(m.digits) : Math.round(val);
-                displayValue += m.unit ? ` ${m.unit}` : '';
+            if (userData.picture) {
+                userAvatar.src = userData.picture;
+            } else {
+                userAvatar.src = 'https://ui-avatars.com/api/?name=' +
+                    encodeURIComponent(userData.name || 'User') +
+                    '&background=6366f1&color=fff&size=40';
             }
 
-            html += `
-            <div class="metric-item">
-                <span class="metric-label">${m.label}</span>
-                <span class="metric-value">${displayValue}</span>
-            </div>
-        `;
+            userBar.style.display = 'flex';
+        } else {
+            // Show login prompt
+            userName.textContent = 'Not Logged In';
+            userEmail.textContent = 'Please login to view dashboard';
+            userAvatar.src = 'https://ui-avatars.com/api/?name=Guest&background=6b7280&color=fff';
         }
+    }
 
-        html += `
-                <div style="margin-top:1.5rem; text-align:center; color:var(--gray); font-style:italic;">
-                    More metrics → <a href="/actuator/metrics" target="_blank" style="color:var(--primary)">/actuator/metrics</a>
+    // Load platform statistics
+    async function loadPlatformStats() {
+        platformStats = await fetchJson('/actuator/seat-saga-stats');
+        return platformStats;
+    }
+
+    // Load system health
+    async function loadHealthData() {
+        healthData = await fetchJson('/actuator/health');
+        return healthData;
+    }
+
+    // Create user info card
+    function createUserCard() {
+        if (!userData) return '';
+
+        return `
+        <div class="card card-small">
+            <div class="card-header">
+                <i class="fas fa-user"></i>
+                User Profile
+            </div>
+            <div class="card-body" style="text-align: center;">
+                <img src="${userData.picture || 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff'}"
+                     alt="User" style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--primary); margin-bottom: 1rem;">
+                <h3 style="margin-bottom: 0.5rem;">${userData.name || 'User'}</h3>
+                <p style="color: var(--gray); margin-bottom: 1rem;">${userData.email || ''}</p>
+                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                    <span class="status-badge up">Authenticated</span>
+                    <span class="status-badge info">Active</span>
                 </div>
             </div>
         </div>
-    `;
-
-        return html;
+        `;
     }
 
+    // Create platform stats card
+    function createPlatformStatsCard() {
+        if (!platformStats) return '';
+
+        const metrics = [
+            { label: 'Total Seats', value: platformStats.total_seats || 0, icon: 'fa-chair' },
+            { label: 'Booked Seats', value: platformStats.booked_seats || 0, icon: 'fa-ticket' },
+            { label: 'Available Seats', value: platformStats.available_seats || 0, icon: 'fa-check-circle' },
+            { label: 'Total Users', value: platformStats.total_users || 0, icon: 'fa-users' },
+            { label: 'Total Bookings', value: platformStats.total_bookings || 0, icon: 'fa-receipt' },
+            { label: 'Occupancy Rate', value: platformStats.occupancy_rate || '0%', icon: 'fa-chart-pie' },
+        ];
+
+        return `
+        <div class="card card-large">
+            <div class="card-header">
+                <i class="fas fa-chart-bar"></i>
+                Platform Statistics
+            </div>
+            <div class="card-body">
+                <div class="metric-grid">
+                    ${metrics.map(metric => `
+                        <div class="metric-card">
+                            <i class="fas ${metric.icon}" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <div class="metric-value">${metric.value}</div>
+                            <div class="metric-label">${metric.label}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #f0f0f0; color: var(--gray); font-size: 0.9rem;">
+                    Last updated: ${platformStats.timestamp || 'N/A'}
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    // Create seat distribution chart
+    function createSeatChart() {
+        if (!platformStats) return '';
+
+        return `
+        <div class="card card-medium">
+            <div class="card-header">
+                <i class="fas fa-chart-pie"></i>
+                Seat Status Distribution
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="seatChart"></canvas>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    // Create booking activity chart
+    function createBookingChart() {
+        return `
+        <div class="card card-medium">
+            <div class="card-header">
+                <i class="fas fa-chart-line"></i>
+                Booking Activity (24h)
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="bookingChart"></canvas>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    // Create system health card
+    function createHealthCard() {
+        if (!healthData) return '';
+
+        const status = healthData.status || 'UNKNOWN';
+        const isUp = status === 'UP';
+
+        let componentsHtml = '';
+        if (healthData.components) {
+            componentsHtml = Object.entries(healthData.components)
+                .map(([key, comp]) => {
+                    const compStatus = comp.status || 'UNKNOWN';
+                    const isCompUp = compStatus === 'UP';
+                    return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid #f0f0f0;">
+                        <div>
+                            <i class="fas ${isCompUp ? 'fa-check-circle' : 'fa-exclamation-circle'}"
+                               style="color: ${isCompUp ? 'var(--success)' : 'var(--danger)'}; margin-right: 0.5rem;"></i>
+                            <span>${key.replace(/-/g, ' ').toUpperCase()}</span>
+                        </div>
+                        <span class="status-badge ${isCompUp ? 'up' : 'down'}">${compStatus}</span>
+                    </div>
+                `;
+                }).join('');
+        }
+
+        return `
+        <div class="card card-medium">
+            <div class="card-header">
+                <i class="fas fa-heart-pulse"></i>
+                System Health
+                <span class="status-badge ${isUp ? 'up' : 'down'}" style="margin-left: auto;">${status}</span>
+            </div>
+            <div class="card-body">
+                ${componentsHtml || '<p style="text-align:center;color:var(--gray);padding:2rem;">No component data available</p>'}
+            </div>
+        </div>
+        `;
+    }
+
+    // Create performance metrics card
+    async function createPerformanceCard() {
+        const metrics = await fetchJson('/actuator/metrics');
+        if (!metrics) return '';
+
+        const importantMetrics = [
+            { name: 'jvm.memory.used', label: 'Memory Used', unit: 'MB', divisor: 1024*1024 },
+            { name: 'process.cpu.usage', label: 'CPU Usage', unit: '%', divisor: 1 },
+            { name: 'http.server.requests', label: 'HTTP Requests', unit: '', divisor: 1 },
+            { name: 'jdbc.connections.active', label: 'DB Connections', unit: '', divisor: 1 },
+            { name: 'jvm.threads.live', label: 'Live Threads', unit: '', divisor: 1 },
+            { name: 'system.cpu.count', label: 'CPU Cores', unit: '', divisor: 1 }
+        ];
+
+        let metricsHtml = '';
+
+        for (const metric of importantMetrics) {
+            const data = await fetchJson(`/actuator/metrics/${metric.name}`);
+            let value = 'N/A';
+
+            if (data?.measurements?.[0]?.value != null) {
+                let val = data.measurements[0].value / metric.divisor;
+                value = metric.unit ? `${val.toFixed(2)} ${metric.unit}` : Math.round(val);
+            }
+
+            metricsHtml += `
+            <div style="display: flex; justify-content: space-between; padding: 0.7rem 0; border-bottom: 1px solid #f0f0f0;">
+                <span>${metric.label}</span>
+                <span style="font-weight: 600;">${value}</span>
+            </div>
+            `;
+        }
+
+        return `
+        <div class="card card-medium">
+            <div class="card-header">
+                <i class="fas fa-tachometer-alt"></i>
+                Performance Metrics
+            </div>
+            <div class="card-body">
+                ${metricsHtml}
+                <div style="margin-top: 1rem; text-align: center;">
+                    <a href="/actuator/metrics" target="_blank" style="color: var(--primary); text-decoration: none;">
+                        <i class="fas fa-external-link-alt"></i> View all metrics
+                    </a>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    // Initialize charts
+    function initializeCharts() {
+        if (!platformStats) return;
+
+        // Seat Distribution Chart (Pie)
+        const seatCtx = document.getElementById('seatChart')?.getContext('2d');
+        if (seatCtx) {
+            new Chart(seatCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Booked', 'Available', 'Locked'],
+                    datasets: [{
+                        data: [
+                            platformStats.booked_seats || 0,
+                            platformStats.available_seats || 0,
+                            platformStats.locked_seats || 0
+                        ],
+                        backgroundColor: [
+                            '#ef4444', // Red for booked
+                            '#10b981', // Green for available
+                            '#f59e0b'  // Yellow for locked
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Booking Activity Chart (Line - mock data for now)
+        const bookingCtx = document.getElementById('bookingChart')?.getContext('2d');
+        if (bookingCtx) {
+            // Mock time series data
+            const hours = Array.from({length: 12}, (_, i) => `${i*2}:00`);
+            const bookings = hours.map(() => Math.floor(Math.random() * 20) + 5);
+
+            new Chart(bookingCtx, {
+                type: 'line',
+                data: {
+                    labels: hours,
+                    datasets: [{
+                        label: 'Bookings per 2h',
+                        data: bookings,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Bookings'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time of Day'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Main dashboard loader
     async function loadDashboard() {
-        dashboard.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading dashboard...</div>';
+        dashboard.innerHTML = '<div class="loading card-full"><i class="fas fa-spinner fa-spin"></i> Loading dashboard...</div>';
 
-        const [health, info] = await Promise.all([
-            fetchJson('/actuator/health'),
-            fetchJson('/actuator/info')
-        ]);
+        try {
+            // Load all data in parallel
+            await Promise.all([
+                loadUserInfo(),
+                loadPlatformStats(),
+                loadHealthData()
+            ]);
 
-        let html = createHealthCard(health) + createInfoCard(info);
-        html += await createMetricsCard();
+            // Build dashboard
+            let html = `
+                ${createUserCard()}
+                ${createPlatformStatsCard()}
+                ${createSeatChart()}
+                ${createBookingChart()}
+                ${createHealthCard()}
+            `;
 
-        dashboard.innerHTML = html || '<div class="error">Could not load monitoring data</div>';
+            // Add performance card async
+            const performanceCard = await createPerformanceCard();
+            html += performanceCard;
+
+            dashboard.innerHTML = html;
+
+            // Initialize charts after DOM is updated
+            setTimeout(initializeCharts, 100);
+
+        } catch (error) {
+            console.error('Failed to load dashboard:', error);
+            dashboard.innerHTML = '<div class="error card-full"><i class="fas fa-exclamation-triangle"></i> Failed to load dashboard data. Please try again.</div>';
+        }
     }
 
-    // Load when page opens + refresh button
-    window.onload = loadDashboard;
+    // Auto-refresh every 30 seconds
+    let refreshInterval;
+    function startAutoRefresh() {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(() => {
+            console.log('Auto-refreshing dashboard...');
+            loadDashboard();
+        }, 30000); // 30 seconds
+    }
+
+    // Initialize on page load
+    window.onload = function() {
+        loadDashboard();
+        startAutoRefresh();
+    };
+
+    // Cleanup on page unload
+    window.onbeforeunload = function() {
+        if (refreshInterval) clearInterval(refreshInterval);
+    };
 </script>
 </body>
 </html>

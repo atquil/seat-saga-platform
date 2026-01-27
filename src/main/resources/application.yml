@@ -17,8 +17,6 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: email,profile
 
-
-  #  config:
 #    activate:
 #      on-profile: "default"   # Runs when no specific profile is set
   # ============================================
@@ -92,7 +90,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus # Expose key actuator endpoints
+        include: health,info,metrics,prometheus,seat-saga-stats # Expose key actuator endpoints
   prometheus:
     metrics:
       export:
@@ -104,16 +102,11 @@ management:
 # 📖 API DOCUMENTATION (Springdoc / Swagger)
 # ============================================
 springdoc:
+  api-docs:
+    path: /api-docs                            # OpenAPI JSON spec endpoint
   swagger-ui:
-    path: /swagger-ui.html
+    path: /swagger-ui.html                     # Swagger UI endpoint
     operations-sorter: method
-    tags-sorter: alpha
-    disable-swagger-default-url: true
-    urls:
-      - url: /api-docs
-        name: Seat Saga API
-      - url: /actuator/seat-saga-stats
-        name: Platform Stats (JSON)
 # ============================================
 # Applicaiton Sprcific Configuration
 # ============================================

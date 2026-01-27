@@ -15,8 +15,8 @@ public record BookingResponse(
         String movieTitle,
         String theatreName,
         LocalDateTime showTime,
-        List<String> seats, // e.g., ["A1", "A2"]
+        List<String> seatLabels,
         BigDecimal totalAmount,
         BookingStatus status,
-        LocalDateTime createdAt
+        LocalDateTime bookedAt
 ) {}

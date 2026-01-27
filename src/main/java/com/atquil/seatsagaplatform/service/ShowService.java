@@ -7,6 +7,7 @@ import com.atquil.seatsagaplatform.entity.*;
 import com.atquil.seatsagaplatform.repo.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ShowService {
 
     @Value("${pricing.regular}")
@@ -46,6 +48,7 @@ public class ShowService {
     private final ScreenRepository screenRepository;
     private final MovieRepository movieRepository;
     private final TheatreRepository theatreRepository;
+    private final SeatRepository seatRepository;
 
 
     @Transactional(readOnly = true)
@@ -337,5 +340,45 @@ public class ShowService {
                 show.getEndTime(),
                 show.getBasePrice()
         );
+    }
+
+    // Add to ShowService.java
+    @Transactional
+    public void ensureShowHasSeats(Show show) {
+        List<Seat> seats = show.getScreen().getSeats();
+
+        if (seats == null || seats.isEmpty()) {
+            log.warn("Screen {} has no seats. Creating default seats...", show.getScreen().getName());
+
+            // Create default seats
+            Screen screen = show.getScreen();
+
+            // Create 2 rows of 5 seats each
+            for (int row = 0; row < 2; row++) {
+                String rowLetter = row == 0 ? "A" : "B";
+                SeatType seatType = row == 0 ? SeatType.REGULAR : SeatType.PREMIUM;
+
+                for (int seatNum = 1; seatNum <= 5; seatNum++) {
+                    Seat seat = Seat.builder()
+                            .screen(screen)
+                            .rowNumber(rowLetter)
+                            .seatNumber(seatNum)
+                            .seatType(seatType)
+                            .build();
+                    seatRepository.save(seat);
+                }
+            }
+
+            // Refresh seats list
+            seats = seatRepository.findByScreenId(screen.getId());
+            show.getScreen().setSeats(seats);
+        }
+
+        // Ensure ShowSeats exist
+        List<ShowSeat> showSeats = showSeatRepository.findByShowId(show.getId());
+        if (showSeats.isEmpty()) {
+            log.info("Creating show seat inventory for show {}", show.getId());
+            createShowSeatInventory(show);
+        }
     }
 }
