@@ -11,6 +11,7 @@ import com.atquil.seatsagaplatform.exception.SeatNotAvailableException;
 import com.atquil.seatsagaplatform.repo.BookingRepository;
 import com.atquil.seatsagaplatform.repo.ShowSeatRepository;
 import com.atquil.seatsagaplatform.repo.UserRepository;
+import com.atquil.seatsagaplatform.service.strategy.DiscountService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +40,7 @@ public class BookingService {
     private final ShowSeatRepository showSeatRepository;
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
-
+    private final DiscountService discountService;
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public BookingResponse createBooking(BookingRequest request) {
@@ -66,17 +68,29 @@ public class BookingService {
         }
 
         try {
-            // 5. Calculate Total (use actual seat prices, not the request total)
-            BigDecimal totalAmount = selectedSeats.stream()
+            // 5. Calculate Original Total
+            BigDecimal originalTotal = selectedSeats.stream()
                     .map(ShowSeat::getPrice)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             // Optional: Validate total matches request total (with tolerance)
             BigDecimal requestedTotal = request.totalAmount();
-            BigDecimal difference = totalAmount.subtract(requestedTotal).abs();
-            if (difference.compareTo(new BigDecimal("0.01")) > 0) { // Allow 1 cent difference
-                log.warn("Price mismatch: Calculated={}, Requested={}", totalAmount, requestedTotal);
+            BigDecimal difference = originalTotal.subtract(requestedTotal).abs();
+            if (difference.compareTo(new BigDecimal("0.01")) > 0) {
+                log.warn("Price mismatch: Calculated={}, Requested={}", originalTotal, requestedTotal);
             }
+
+            // 6. APPLY DISCOUNTS USING STRATEGY PATTERN
+            List<BigDecimal> seatPrices = selectedSeats.stream()
+                    .map(ShowSeat::getPrice)
+                    .collect(Collectors.toList());
+
+            LocalDateTime showTime = selectedSeats.getFirst().getShow().getStartTime();
+            BigDecimal totalDiscount = discountService.calculateTotalDiscount(showTime, seatPrices);
+
+            BigDecimal finalTotal = originalTotal.subtract(totalDiscount);
+            log.info("Booking total: ${} - ${} discount = ${}",
+                    originalTotal, totalDiscount, finalTotal);
 
             // 6. Create Booking Entity (PENDING)
             Booking booking = Booking.builder()
@@ -84,7 +98,9 @@ public class BookingService {
                     .show(selectedSeats.getFirst().getShow()) // All seats belong to same show
                     .bookingReference(UUID.randomUUID().toString())
                     .status(BookingStatus.PENDING) // Pending Payment
-                    .totalAmount(totalAmount) // Use calculated total
+                    .totalAmount(finalTotal) // Use calculated total
+                    .originalAmount(originalTotal) // Store original for reporting
+                    .discountAmount(totalDiscount) // Store discount amount
                     .build();
 
             Booking savedBooking = bookingRepository.save(booking);
@@ -97,7 +113,7 @@ public class BookingService {
             showSeatRepository.saveAll(selectedSeats);
 
             // 8. Map to Response DTO
-            return mapToResponse(savedBooking, selectedSeats);
+            return mapToResponse(savedBooking, selectedSeats, totalDiscount);
 
         } catch (ObjectOptimisticLockingFailureException e) {
             // This catches the race condition if someone else booked milliseconds ago
@@ -163,7 +179,7 @@ public class BookingService {
         throw new IllegalStateException("User not authenticated correctly");
     }
 
-    private BookingResponse mapToResponse(Booking booking, List<ShowSeat> seats) {
+    private BookingResponse mapToResponse(Booking booking, List<ShowSeat> seats, BigDecimal discountAmount) {
         List<String> seatLabels = seats.stream()
                 .map(s -> s.getSeat().getRowNumber() + s.getSeat().getSeatNumber())
                 .collect(Collectors.toList());
@@ -176,6 +192,7 @@ public class BookingService {
                 booking.getShow().getStartTime(),
                 seatLabels,
                 booking.getTotalAmount(),
+                discountAmount,
                 booking.getStatus(),
                 booking.getCreatedAt()
         );

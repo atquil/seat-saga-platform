@@ -38,6 +38,12 @@ public class Booking extends BaseEntity {
     @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
 
+    @Column(name = "original_amount", precision = 10, scale = 2)
+    private BigDecimal originalAmount;
+
+    @Column(name = "discount_amount", precision = 10, scale = 2)
+    private BigDecimal discountAmount;
+
     // One Booking has many ShowSeats
     @Builder.Default //It tells Lombok to use your new ArrayList<>() initialization as the default value when building an object if no other list is provided
     @OneToMany(mappedBy = "booking")
