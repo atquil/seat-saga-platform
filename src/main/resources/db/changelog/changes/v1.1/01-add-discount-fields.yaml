@@ -1,0 +1,60 @@
+# src/main/resources/db/changelog/05-add-discount-fields.yaml
+databaseChangeLog:
+  - changeSet:
+      id: 05-add-discount-fields
+      author: atquil
+      comment: "Add discount tracking fields to booking table"
+      dbms: postgresql
+      context: local, dev, prod
+      changes:
+        - addColumn:
+            tableName: booking
+            columns:
+              - column:
+                  name: original_amount
+                  type: DECIMAL(10,2)
+                  defaultValueNumeric: 0
+                  remarks: "Original price before discounts"
+              - column:
+                  name: discount_amount
+                  type: DECIMAL(10,2)
+                  defaultValueNumeric: 0
+                  remarks: "Total discount applied"
+        - addColumn:
+            tableName: booking
+            columns:
+              - column:
+                  name: applied_discounts
+                  type: TEXT
+                  remarks: "JSON array of applied discount names"
+
+        # Add index for discount reporting
+        - createIndex:
+            tableName: booking
+            indexName: idx_booking_discount
+            columns:
+              - column:
+                  name: discount_amount
+                  type: DECIMAL(10,2)
+
+        # Update existing bookings to have default values
+        - sql:
+            sql: |
+              UPDATE booking 
+              SET original_amount = total_amount, 
+                  discount_amount = 0 
+              WHERE original_amount IS NULL;
+
+      rollback:
+        - dropIndex:
+            tableName: booking
+            indexName: idx_booking_discount
+        - dropColumn:
+            tableName: booking
+            columnName: applied_discounts
+        - dropColumn:
+            tableName: booking
+            columnName: discount_amount
+        - dropColumn:
+            tableName: booking
+            columnName: original_amount

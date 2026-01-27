@@ -113,6 +113,20 @@ springdoc:
 # ============================================
 # Applicaiton Sprcific Configuration
 # ============================================
+# Discount Configurations with Environment Variables
+discount:
+  third-ticket:
+    enabled: ${THIRD_TICKET_ENABLED:true}
+    percentage: ${THIRD_TICKET_PERCENTAGE:50}
+    min-tickets: ${THIRD_TICKET_MIN_TICKETS:3}
+
+  afternoon-show:
+    enabled: ${AFTERNOON_SHOW_ENABLED:true}
+    percentage: ${AFTERNOON_SHOW_PERCENTAGE:20}
+    start-hour: ${AFTERNOON_SHOW_START_HOUR:12}
+    end-hour: ${AFTERNOON_SHOW_END_HOUR:17}
+
+# Pricing configurations with Environment Variables
 pricing:
   regular: ${REGULAR_PRICE:0}
   premium: ${PREMIUM_PRICE:100}

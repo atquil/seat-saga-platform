@@ -44,3 +44,6 @@ databaseChangeLog:
   - includeAll:
       path: db/changelog/data/seed-data/
       relativeToChangelogFile: false
+  - includeAll:
+      path: db/changelog/changes/v1.1/
+      relativeToChangelogFile: false

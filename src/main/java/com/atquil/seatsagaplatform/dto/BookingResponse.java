@@ -17,6 +17,7 @@ public record BookingResponse(
         LocalDateTime showTime,
         List<String> seatLabels,
         BigDecimal totalAmount,
+        BigDecimal discountApplied,
         BookingStatus status,
         LocalDateTime bookedAt
 ) {}
